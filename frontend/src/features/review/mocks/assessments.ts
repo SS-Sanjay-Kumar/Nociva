@@ -97,12 +97,15 @@ export function evaluateCombination(
           source: 'CPIC',
           citation: 'Goetz MP, et al. CPIC Guideline for CYP2D6 and Tamoxifen Therapy.',
           // Deep link to this specific guideline page not verified — linking
-          // to the CPIC guidelines index instead of guessing a slug.
+          // to the CPIC guidelines index instead of guessing a slug. This
+          // index URL itself was not opened/verified in this session either.
           url: 'https://cpicpgx.org/guidelines/',
         },
         {
           source: 'FDA',
           citation: 'Table of substrates, inhibitors and inducers (drug development and drug interactions).',
+          // URL not opened/verified in this session — recalled from training
+          // data, not confirmed live.
           url: 'https://www.fda.gov/drugs/drug-interactions-labeling/drug-development-and-drug-interactions-table-substrates-inhibitors-and-inducers',
         },
       ],
@@ -129,6 +132,7 @@ export function evaluateCombination(
         {
           source: 'CPIC',
           citation: 'Crews KR, et al. CPIC Guideline for CYP2D6, OPRM1 and COMT Genotypes and Select Opioid Therapy.',
+          // Guidelines index URL, not a verified deep link — not opened/verified in this session.
           url: 'https://cpicpgx.org/guidelines/',
         },
       ],
@@ -156,6 +160,7 @@ export function evaluateCombination(
           {
             source: 'CPIC',
             citation: 'Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.',
+            // Guidelines index URL, not a verified deep link — not opened/verified in this session.
             url: 'https://cpicpgx.org/guidelines/',
           },
         ],
@@ -179,6 +184,7 @@ export function evaluateCombination(
         {
           source: 'CPIC',
           citation: 'Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.',
+          // Guidelines index URL, not a verified deep link — not opened/verified in this session.
           url: 'https://cpicpgx.org/guidelines/',
         },
       ],

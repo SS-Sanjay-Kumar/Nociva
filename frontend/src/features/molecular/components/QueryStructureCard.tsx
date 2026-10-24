@@ -4,7 +4,14 @@ import { Chip } from '../../../components/ui/Chip'
 import { Fine } from '../../../components/ui/Misc'
 import type { MolecularAnalysisResponse } from '../../../types'
 
-export function QueryStructureCard({ result }: { result: MolecularAnalysisResponse | null }) {
+export function QueryStructureCard({
+  result,
+  isTrueIdle,
+}: {
+  result: MolecularAnalysisResponse | null
+  /** True only in the genuine idle/empty state (no text entered, nothing attempted yet). */
+  isTrueIdle: boolean
+}) {
   return (
     <Card>
       <CardHeader>
@@ -22,7 +29,7 @@ export function QueryStructureCard({ result }: { result: MolecularAnalysisRespon
           ) : (
             <div className="flex flex-col items-center gap-2 p-3 text-center text-[12.5px] text-ink-3">
               <Hexagon size={34} />
-              {result ? 'No structure to draw' : 'Enter a SMILES string'}
+              {isTrueIdle ? 'Enter a SMILES string' : 'No structure available'}
             </div>
           )}
         </div>

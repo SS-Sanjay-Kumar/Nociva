@@ -1,5 +1,6 @@
-import { ChevronRight, Database, ShieldCheck } from 'lucide-react'
+import { ChevronRight, Database, FlaskConical, ShieldCheck } from 'lucide-react'
 import { Chip } from '../ui/Chip'
+import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
 
 export function Topbar({ title }: { title: string }) {
   return (
@@ -10,9 +11,15 @@ export function Topbar({ title }: { title: string }) {
         <b className="font-semibold text-ink">{title}</b>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2.5">
-        <Chip variant="teal" icon={<ShieldCheck size={13} />} className="hidden min-[560px]:inline-flex">
-          Deterministic engine v0.3
-        </Chip>
+        {MEDICATION_REVIEW_MOCK_MODE ? (
+          <Chip variant="exp" icon={<FlaskConical size={13} />} className="hidden min-[560px]:inline-flex">
+            Demo fixtures, not a live engine
+          </Chip>
+        ) : (
+          <Chip variant="teal" icon={<ShieldCheck size={13} />} className="hidden min-[560px]:inline-flex">
+            Deterministic engine v0.3
+          </Chip>
+        )}
         <Chip variant="amber" icon={<Database size={13} />}>
           Synthetic data
         </Chip>

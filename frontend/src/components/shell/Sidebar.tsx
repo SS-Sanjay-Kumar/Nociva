@@ -14,8 +14,15 @@ export function Sidebar() {
 
       <nav aria-label="Primary" className="flex flex-col gap-1 max-[720px]:flex-row">
         <NavItem to="/" icon={<Activity size={18} />} label="Medication review" />
-        <NavItem to="/molecular" icon={<FlaskConical size={18} />} label="Molecular explorer" tag="Experimental" tagVariant="exp" />
-        <NavItem icon={<LineChart size={18} />} label="PK simulation" tag="Soon" tagVariant="soon" disabled />
+        <NavItem
+          to="/molecular"
+          icon={<FlaskConical size={18} />}
+          label="Molecular explorer"
+          tag="EXP"
+          tagTitle="Experimental"
+          tagVariant="exp"
+        />
+        <NavItem icon={<LineChart size={18} />} label="PK simulation" tag="Soon" tagTitle="Coming soon" tagVariant="soon" disabled />
       </nav>
 
       <div className="mt-auto flex flex-col gap-3 rounded-xl border border-white/10 p-3.5 text-xs text-navy-300 min-[721px]:max-[1100px]:hidden max-[720px]:hidden">
@@ -44,6 +51,7 @@ function NavItem({
   icon,
   label,
   tag,
+  tagTitle,
   tagVariant,
   disabled,
 }: {
@@ -51,16 +59,19 @@ function NavItem({
   icon: React.ReactNode
   label: string
   tag?: string
+  tagTitle?: string
   tagVariant?: 'exp' | 'soon'
   disabled?: boolean
 }) {
   const content = (isActive: boolean) => (
     <>
-      {icon}
-      <span className="min-[721px]:max-[1100px]:hidden max-[720px]:inline whitespace-nowrap">{label}</span>
+      <span className="shrink-0">{icon}</span>
+      <span className="min-w-0 flex-1 truncate min-[721px]:max-[1100px]:hidden max-[720px]:inline">{label}</span>
       {tag && (
         <span
-          className={`ml-auto min-[721px]:max-[1100px]:hidden max-[720px]:hidden rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] ${
+          title={tagTitle ?? tag}
+          aria-label={tagTitle ?? tag}
+          className={`ml-auto flex-none whitespace-nowrap min-[721px]:max-[1100px]:hidden max-[720px]:hidden rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] ${
             tagVariant === 'exp'
               ? 'border border-dashed border-exp-300/65 bg-exp-300/15 text-exp-200'
               : 'bg-white/10 text-navy-300'

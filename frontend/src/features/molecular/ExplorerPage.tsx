@@ -19,7 +19,7 @@ export function ExplorerPage() {
   const [text, setText] = useState('')
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null)
   const [modelInfoUnavailable, setModelInfoUnavailable] = useState(false)
-  const { state, result, errorMessage, analyze } = useMolecularAnalysis()
+  const { state, result, errorMessage, analyze, reset } = useMolecularAnalysis()
 
   useEffect(() => {
     fetchModelInfo()
@@ -88,12 +88,16 @@ export function ExplorerPage() {
             onPickExample={run}
             onClear={() => {
               setText('')
+              reset()
             }}
             loading={state === 'loading'}
             fieldError={fieldError}
             valid={state === 'success'}
           />
-          <QueryStructureCard result={state === 'success' ? result : null} />
+          <QueryStructureCard
+            result={state === 'success' ? result : null}
+            isTrueIdle={state === 'idle' && text.trim().length === 0}
+          />
         </div>
         <div className="min-w-0">{right}</div>
       </div>
