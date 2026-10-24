@@ -1,5 +1,42 @@
 # Nociva (still under development)
 
+## Running the application
+
+### 1. Create virtual python environment
+- macOS/Linux
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+
+- windows(cmd)
+```
+python -m venv venv
+venv\Scripts\activate.bat
+```
+- windows(powershell)
+```
+python -m venv venv
+venv\Scripts\Activate.ps1
+```
+### 2. Install dependencies
+```
+pip install --upgrade pip 
+pip install -r requirements.txt
+```
+### 3. Configure the virtual environments (.env)
+
+```
+SUPABASE_URL=XXX
+SUPABASE_KEY=XXX
+```
+
+### 4. Run using uvicorn
+```
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+---
+
 ## Folder Structure
 ```
 Nociva
