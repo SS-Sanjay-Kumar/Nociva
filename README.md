@@ -21,6 +21,8 @@ GeneCollision/
       features/molecular/   Molecular Explorer (live-API feature)
       components/ui/        Shared design-system primitives
       components/shell/     Sidebar, Topbar, Footer
+  scripts/setup.sh Backend+frontend deps, trains model if missing (idempotent)
+  scripts/dev.sh   Starts both dev servers, Ctrl+C stops both
   INTEGRATION.md   API contracts, both implemented and expected
   DEMO.md          2-minute demo script
 ```
@@ -42,7 +44,19 @@ between them is a plain navigation link.
 - Node.js 20+ and npm
 - Python 3.12 (a virtualenv is used; no system-wide installs required)
 
-## Backend: setup, train, and run
+## Quick start
+
+```bash
+./scripts/setup.sh   # one-time: venv, deps, trains the model if needed (~10-15s warm, see docs/ARTIFACTS.md)
+./scripts/dev.sh      # starts backend (:8000) and frontend together; Ctrl+C stops both
+```
+
+Both scripts are idempotent — safe to re-run. See docs/ARTIFACTS.md for
+timing/size numbers and how artifacts could travel to teammates later.
+
+## Backend: manual setup, train, and run
+
+Equivalent to `scripts/setup.sh`, step by step:
 
 ```bash
 cd backend
@@ -129,6 +143,8 @@ npm test        # Vitest + React Testing Library
 - `docs/contracts/` — generated JSON Schema and worked examples for the
   Medication Review contract (source of truth: `frontend/src/contracts/`).
 - [THIRD_PARTY.md](./THIRD_PARTY.md) — direct dependency licenses.
+- [docs/ARTIFACTS.md](./docs/ARTIFACTS.md) — model artifact timing, sizes,
+  and distribution options.
 
 ## Git
 
