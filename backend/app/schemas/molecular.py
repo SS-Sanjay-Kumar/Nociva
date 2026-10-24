@@ -27,27 +27,36 @@ class Cyp2d6Result(BaseModel):
     prediction: Cyp2d6Prediction | None = None
 
 
+class FingerprintInfo(BaseModel):
+    type: str
+    radius: int
+    nBits: int
+
+
 class Provenance(BaseModel):
     dataset: str
     license: str
     method: str
+    fingerprint: FingerprintInfo | None = None
+    referenceSetSize: int | None = None
+    reportingThreshold: float | None = None
 
 
 class MolecularAnalyzeResponse(BaseModel):
     inputSmiles: str
     canonicalSmiles: str | None
     valid: bool
+    queryImageBase64: str | None = None
+    molecularFormula: str | None = None
+    molecularWeight: float | None = None
     neighbors: list[SimilarityNeighbor] = []
+    # Highest Tanimoto similarity found among reference compounds, even if
+    # below reportingThreshold and therefore not included in `neighbors`.
+    maxSimilarity: float | None = None
     cyp2d6: Cyp2d6Result
     provenance: Provenance
     limitations: list[str] = []
     error: str | None = None
-
-
-class FingerprintInfo(BaseModel):
-    type: str
-    radius: int
-    nBits: int
 
 
 class DatasetInfo(BaseModel):

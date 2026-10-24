@@ -23,7 +23,7 @@ export function StepBadge({ children, variant = 'default' }: { children: ReactNo
 export function Skeleton({ height = 150, dashed = false, className = '' }: { height?: number; dashed?: boolean; className?: string }) {
   return (
     <div
-      className={`skel ${dashed ? 'border-1.5 border-dashed border-exp-300' : ''} ${className}`}
+      className={`skel ${dashed ? 'border-[1.5px] border-dashed border-exp-300' : ''} ${className}`}
       style={{ height }}
     />
   )

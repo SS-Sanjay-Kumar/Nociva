@@ -176,7 +176,12 @@ export interface MolecularAnalysisResponse {
   inputSmiles: string
   canonicalSmiles: string | null
   valid: boolean
+  queryImageBase64?: string | null
+  molecularFormula?: string | null
+  molecularWeight?: number | null
   neighbors: SimilarityNeighbor[]
+  /** Highest Tanimoto similarity found, even if below reportingThreshold and so excluded from `neighbors`. */
+  maxSimilarity?: number | null
   cyp2d6: {
     modelTrained: boolean
     prediction?: Cyp2d6Prediction
@@ -185,6 +190,9 @@ export interface MolecularAnalysisResponse {
     dataset: string
     license: string
     method: string
+    fingerprint?: { type: string; radius: number; nBits: number } | null
+    referenceSetSize?: number | null
+    reportingThreshold?: number | null
   }
   limitations: string[]
   error?: string | null

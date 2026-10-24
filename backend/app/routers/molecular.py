@@ -15,6 +15,8 @@ backend/models/ (produced by backend/ml/*.py) and nothing else.
 from __future__ import annotations
 
 from fastapi import APIRouter
+from rdkit import Chem
+from rdkit.Chem import Descriptors, rdMolDescriptors
 
 from app.schemas.molecular import (
     Cyp2d6Prediction,
@@ -34,7 +36,7 @@ from app.services.molecular.features import (
     mol_to_fingerprint,
     validate_and_canonicalize,
 )
-from rdkit import Chem
+from app.services.molecular.similarity import REPORTING_THRESHOLD, render_molecule_png_b64
 
 router = APIRouter(prefix="/api/molecular", tags=["molecular"])
 
@@ -53,6 +55,17 @@ BASE_LIMITATIONS = [
 ]
 
 
+def _provenance() -> Provenance:
+    return Provenance(
+        dataset=DATASET_NAME,
+        license=DATASET_LICENSE,
+        method=METHOD_DESCRIPTION,
+        fingerprint=FingerprintInfo(**fingerprint_metadata()),
+        referenceSetSize=similarity.reference_set_size(),
+        reportingThreshold=REPORTING_THRESHOLD,
+    )
+
+
 @router.post("/analyze", response_model=MolecularAnalyzeResponse)
 def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeResponse:
     raw_smiles = payload.smiles
@@ -65,7 +78,7 @@ def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeRespon
             valid=False,
             neighbors=[],
             cyp2d6=Cyp2d6Result(modelTrained=classifier.model_trained(), prediction=None),
-            provenance=Provenance(dataset=DATASET_NAME, license=DATASET_LICENSE, method=METHOD_DESCRIPTION),
+            provenance=_provenance(),
             limitations=BASE_LIMITATIONS,
             error="Input is not a valid SMILES string that RDKit can parse.",
         )
@@ -73,8 +86,14 @@ def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeRespon
     mol = Chem.MolFromSmiles(canonical)
     query_fp = mol_to_fingerprint(mol)
 
-    neighbor_dicts = similarity.find_top_k_neighbors(query_fp) if similarity.index_available() else []
-    neighbors = [SimilarityNeighbor(**n) for n in neighbor_dicts]
+    all_neighbor_dicts = similarity.find_top_k_neighbors(query_fp) if similarity.index_available() else []
+    max_similarity = all_neighbor_dicts[0]["tanimotoSimilarity"] if all_neighbor_dicts else None
+    reported_neighbor_dicts = (
+        [n for n in all_neighbor_dicts if n["tanimotoSimilarity"] >= REPORTING_THRESHOLD]
+        if max_similarity is not None and max_similarity >= REPORTING_THRESHOLD
+        else []
+    )
+    neighbors = [SimilarityNeighbor(**n) for n in reported_neighbor_dicts]
 
     cyp2d6_prediction_dict = classifier.predict(query_fp) if classifier.model_trained() else None
     cyp2d6 = Cyp2d6Result(
@@ -86,9 +105,13 @@ def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeRespon
         inputSmiles=raw_smiles,
         canonicalSmiles=canonical,
         valid=True,
+        queryImageBase64=render_molecule_png_b64(canonical),
+        molecularFormula=rdMolDescriptors.CalcMolFormula(mol),
+        molecularWeight=round(Descriptors.MolWt(mol), 2),
         neighbors=neighbors,
+        maxSimilarity=max_similarity,
         cyp2d6=cyp2d6,
-        provenance=Provenance(dataset=DATASET_NAME, license=DATASET_LICENSE, method=METHOD_DESCRIPTION),
+        provenance=_provenance(),
         limitations=BASE_LIMITATIONS,
         error=None,
     )

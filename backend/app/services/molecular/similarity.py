@@ -18,6 +18,7 @@ MODELS_DIR = Path(__file__).resolve().parents[3] / "models"
 INDEX_PATH = MODELS_DIR / "reference_index.joblib"
 
 TOP_K = 5
+REPORTING_THRESHOLD = 0.30
 
 
 @lru_cache(maxsize=1)
@@ -29,6 +30,11 @@ def _load_index():
 
 def index_available() -> bool:
     return _load_index() is not None
+
+
+def reference_set_size() -> int | None:
+    index = _load_index()
+    return len(index["identifiers"]) if index is not None else None
 
 
 def tanimoto_bulk(query_fp: np.ndarray, reference_fps: np.ndarray) -> np.ndarray:
