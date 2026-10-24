@@ -23,7 +23,7 @@ const TITLE: Record<EvidenceStatus, string> = {
 }
 
 export function VerdictCard({ result, patient }: { result: AssessmentResult; patient: PatientProfile }) {
-  const { verdict, medications, generatedAt, isMock } = result
+  const { verdict, medications } = result
   const Icon = ICON[verdict.evidenceStatus]
   const d6 = patient.genotypes.find((g) => g.gene === 'CYP2D6')
 
@@ -55,9 +55,16 @@ export function VerdictCard({ result, patient }: { result: AssessmentResult; pat
         <SafetyCallout text={COPY.verdict.insufficient.callout} />
       )}
 
+      {/*
+        `recommendation` is never populated by the mock fixtures (see
+        features/review/mocks/assessments.ts) — only a future backend
+        supplying real guideline text would cause this to render, labelled
+        "Guideline text" rather than "Recommendation" so it reads as a
+        citation, not frontend-authored clinical advice.
+      */}
       {verdict.recommendation && (
         <p className="rounded-md bg-white/60 px-3 py-2 text-sm text-ink">
-          <span className="font-medium">Recommendation: </span>
+          <span className="font-medium">Guideline text: </span>
           {verdict.recommendation}
         </p>
       )}
@@ -65,8 +72,15 @@ export function VerdictCard({ result, patient }: { result: AssessmentResult; pat
       <dl className="grid grid-cols-1 gap-3.5 border-t border-black/10 pt-4 min-[560px]:grid-cols-2">
         <MetaItem label="Patient" value={patient.label} sub={`${patient.id} · CYP2D6 ${d6?.diplotype ?? '—'}`} />
         <MetaItem label="Medications evaluated" value={medications.map((m) => m.name).join(' + ')} />
-        <MetaItem label="Result source" value={isMock ? 'Demonstration fixture' : 'Live backend'} />
-        <MetaItem label="Generated" value={new Date(generatedAt).toLocaleString()} />
+        {verdict.evidenceBasis && <MetaItem label="Evidence basis" value={verdict.evidenceBasis} />}
+        {verdict.ruleId && (
+          <MetaItem
+            label="Rule"
+            value={verdict.ruleId}
+            mono
+            sub={[verdict.engineVersion, verdict.evidenceSnapshot && `snapshot ${verdict.evidenceSnapshot}`].filter(Boolean).join(' · ')}
+          />
+        )}
       </dl>
     </section>
   )
@@ -84,13 +98,13 @@ function SafetyCallout({ text }: { text: string }) {
   )
 }
 
-function MetaItem({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function MetaItem({ label, value, sub, mono }: { label: string; value: string; sub?: string; mono?: boolean }) {
   return (
     <div>
       <dt className="text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-3">{label}</dt>
-      <dd className="mt-0.5 font-medium">
+      <dd className={`mt-0.5 font-medium ${mono ? 'font-mono text-[13px]' : ''}`}>
         {value}
-        {sub && <small className="block font-normal text-ink-3">{sub}</small>}
+        {sub && <small className="block font-sans font-normal text-ink-3">{sub}</small>}
       </dd>
     </div>
   )

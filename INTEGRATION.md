@@ -115,18 +115,19 @@ is `[]`, `canonicalSmiles` is `null`, `error` explains why. Still HTTP `200`
 
 ## 3. Medication Review: current state and backend contract needed
 
-The Medication Review page (`frontend/src/pages/MedicationReviewPage.tsx`) is
-**fully built against mock fixtures** (`frontend/src/mocks/*.ts`) because no
-deterministic rule-engine backend contract exists yet. It never computes a
-clinical verdict client-side — `frontend/src/api/medicationApi.ts` is the one
-place that would change.
+The Medication Review page (`frontend/src/features/review/ReviewPage.tsx`) is
+**fully built against mock fixtures** (`frontend/src/features/review/mocks/*.ts`)
+because no deterministic rule-engine backend contract exists yet. It never
+computes a clinical verdict client-side — `frontend/src/features/review/api.ts`
+is the one place that would change.
 
-Expected real contract (not yet implemented server-side):
+Expected real contract (not yet implemented server-side). Note this is one
+verdict for the **whole** selected medication list, not one per drug:
 
 ```
 GET  /api/patients                       -> PatientProfile[]
 GET  /api/medications?query=<string>     -> Medication[]
-POST /api/assessments                    -> AssessmentResult[]
+POST /api/assessments                    -> AssessmentResult
      body: { patientId: string, medicationIds: string[] }
 ```
 
@@ -135,9 +136,54 @@ Types (`frontend/src/types/index.ts`) are the authoritative shape:
 `EvidenceStatus` (`"association_found" | "no_documented_association" |
 "insufficient_evidence"`).
 
+`ClinicalVerdict`'s required fields are `evidenceStatus`, `summary`,
+`references`, `limitations`. The rest are optional and additive — the UI
+degrades gracefully if your backend omits them, but populating them lights
+up the corresponding card:
+
+```ts
+interface ClinicalVerdict {
+  evidenceStatus: EvidenceStatus
+  summary: string
+  recommendation?: string        // rendered as "Guideline text" — only ever
+                                  // real guideline-sourced text, never
+                                  // frontend-authored advice
+  references: EvidenceReference[]
+  limitations: string[]
+  mechanism?: FlowNode[]         // 4-node flow: gene -> inhibitor -> substrate -> effect
+                                  // (or a node with kind "missing"/"unknown"); renders
+                                  // as MechanismCard's flow diagram when present
+  checks?: CheckItem[]           // per-medication-pair check list; renders instead of
+                                  // the flow diagram when `mechanism` is absent
+  missingData?: string[]         // renders as a distinct "Missing data" list above
+                                  // "Limitations" in the same card
+  evidenceBasis?: string         // e.g. "Guideline-supported", "Incomplete input"
+  ruleId?: string
+  engineVersion?: string
+  evidenceSnapshot?: string      // e.g. a date string for when evidence was last reviewed
+}
+
+interface FlowNode {
+  kind: 'gene' | 'inhibitor' | 'substrate' | 'effect' | 'unknown' | 'missing'
+  label: string   // e.g. "Patient genotype", "Inhibitor on list"
+  title: string   // e.g. "CYP2D6 *1/*4"
+  sub: string     // e.g. "Intermediate metabolizer · activity score 1.0"
+}
+
+interface CheckItem {
+  label: string   // e.g. "Metoprolol × Warfarin"
+  note: string    // e.g. "CYP2D6 normal metabolizer  ·  CYP2C9 normal metabolizer"
+  missing: boolean // true if a gene needed for this pair has no result
+}
+```
+
+See `frontend/src/features/review/mocks/assessments.ts` for worked examples
+of all three evidence statuses, including the `mechanism` vs. `checks`
+branching logic.
+
 To switch Medication Review from mock to live once your contract exists:
-1. In `frontend/src/api/medicationApi.ts`, replace the mock-returning bodies
-   of `fetchPatients`, `fetchMedications`, `runAssessment` with
+1. In `frontend/src/features/review/api.ts`, replace the mock-returning
+   bodies of `fetchPatients`, `fetchMedications`, `runAssessment` with
    `apiRequest<T>(...)` calls (the central client in `api/client.ts`).
 2. Flip `MEDICATION_REVIEW_MOCK_MODE` in `frontend/src/lib/config.ts` to a
    runtime/env-driven flag instead of a hardcoded `true`.

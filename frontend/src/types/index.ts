@@ -64,12 +64,43 @@ export interface EvidenceReference {
   url?: string
 }
 
+export type FlowNodeKind = 'gene' | 'inhibitor' | 'substrate' | 'effect' | 'unknown' | 'missing'
+
+export interface FlowNode {
+  kind: FlowNodeKind
+  label: string
+  title: string
+  sub: string
+}
+
+export interface CheckItem {
+  label: string
+  note: string
+  missing: boolean
+}
+
 export interface ClinicalVerdict {
   evidenceStatus: EvidenceStatus
   summary: string
+  /**
+   * Guideline-sourced action text from the backend, if it supplies any.
+   * Never populated by the mock fixtures — see features/review/copy.ts and
+   * VerdictCard, which label this "Guideline text" rather than
+   * "Recommendation" to make clear it is not frontend-authored advice.
+   */
   recommendation?: string
   references: EvidenceReference[]
   limitations: string[]
+  /** Four-node mechanism flow (gene -> inhibitor -> substrate -> effect), when a rule applies. */
+  mechanism?: FlowNode[]
+  /** Per-medication-pair check list, rendered instead of `mechanism` when no single rule applies. */
+  checks?: CheckItem[]
+  /** Data the engine would have needed but did not have, distinct from `limitations`. */
+  missingData?: string[]
+  evidenceBasis?: string
+  ruleId?: string
+  engineVersion?: string
+  evidenceSnapshot?: string
 }
 
 export interface AssessmentResult {

@@ -12,6 +12,7 @@ import { IdlePane } from './components/IdlePane'
 import { LoadingPane } from './components/LoadingPane'
 import { EnginePane } from './components/EnginePane'
 import { VerdictCard } from './components/VerdictCard'
+import { MechanismCard } from './components/MechanismCard'
 import { EvidenceCard } from './components/EvidenceCard'
 import { LimitsCard } from './components/LimitsCard'
 import { StaleBanner } from './components/StaleBanner'
@@ -96,9 +97,10 @@ export function ReviewPage() {
       <div className={`flex flex-col gap-4 ${stale ? 'opacity-55' : ''}`}>
         {stale && <StaleBanner onRerun={() => run(false)} />}
         <VerdictCard result={result} patient={patient} />
+        <MechanismCard mechanism={result.verdict.mechanism} checks={result.verdict.checks} />
         <div className="grid grid-cols-1 gap-4 min-[901px]:grid-cols-2">
           <EvidenceCard references={result.verdict.references} />
-          <LimitsCard limitations={result.verdict.limitations} />
+          <LimitsCard missingData={result.verdict.missingData} limitations={result.verdict.limitations} />
         </div>
       </div>
     ) : null

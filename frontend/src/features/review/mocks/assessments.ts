@@ -1,4 +1,4 @@
-import type { ClinicalVerdict, Genotype, Medication, PatientProfile } from '../../../types'
+import type { CheckItem, ClinicalVerdict, FlowNode, Genotype, Medication, PatientProfile } from '../../../types'
 
 /**
  * DEMONSTRATION FIXTURE — hand-authored, deterministic gene-drug-drug rule
@@ -10,15 +10,15 @@ import type { ClinicalVerdict, Genotype, Medication, PatientProfile } from '../.
  * NOTE: the hard safety callouts for `no_documented_association` and
  * `insufficient_evidence` are NOT read from this file — they are
  * hard-coded in features/review/copy.ts and rendered unconditionally by
- * VerdictCard regardless of what `summary` says here.
+ * VerdictCard regardless of what `summary` says here. `recommendation` is
+ * also never set here — see the field's doc comment in types/index.ts.
  */
 
 const MOCK_LIMITATIONS = ['Demonstration fixture — not a live clinical decision.']
+const ENGINE_META = { engineVersion: 'Rules engine v0.3 (demo)', evidenceSnapshot: '2026-10-20' }
 
 /** CYP2D6 strong inhibitors in this demo's supported medication list. */
 const CYP2D6_INHIBITORS = ['med-paroxetine', 'med-fluoxetine']
-/** Medications requiring CYP2D6 activation for their documented effect. */
-const CYP2D6_PRODRUGS = ['med-tamoxifen', 'med-codeine']
 
 /** Each medication's gene relevant to interaction checks in this demo, if any. */
 const RELEVANT_GENE: Record<string, string> = {
@@ -41,6 +41,39 @@ function lower(phenotype?: string) {
   return (phenotype ?? '').replaceAll('_', ' ')
 }
 
+function geneNode(g: Genotype): FlowNode {
+  return {
+    kind: 'gene',
+    label: 'Patient genotype',
+    title: `${g.gene} ${g.diplotype ?? ''}`.trim(),
+    sub: `${lower(g.phenotype)}${g.activityScore !== undefined ? ` · activity score ${g.activityScore.toFixed(1)}` : ''}`,
+  }
+}
+
+/** Builds the per-pair check list shown when no single mechanism rule applies. */
+function buildChecks(patient: PatientProfile, medicationIds: string[], medsById: Map<string, Medication>): CheckItem[] {
+  const checks: CheckItem[] = []
+  for (let i = 0; i < medicationIds.length; i++) {
+    for (let j = i + 1; j < medicationIds.length; j++) {
+      const a = medsById.get(medicationIds[i])
+      const b = medsById.get(medicationIds[j])
+      if (!a || !b) continue
+      const genes = [...new Set([RELEVANT_GENE[medicationIds[i]], RELEVANT_GENE[medicationIds[j]]].filter(Boolean))]
+      const missing = genes.some((gene) => !geneState(patient, gene))
+      const note = genes.length
+        ? genes
+            .map((gene) => {
+              const g = geneState(patient, gene)
+              return g ? `${gene} ${lower(g.phenotype)}` : `${gene} not tested`
+            })
+            .join('  ·  ')
+        : 'No relevant gene in this demo rule set'
+      checks.push({ label: `${a.name} × ${b.name}`, note, missing })
+    }
+  }
+  return checks
+}
+
 export function evaluateCombination(
   patient: PatientProfile,
   medicationIds: string[],
@@ -55,40 +88,60 @@ export function evaluateCombination(
   // Rule: CYP2D6 inhibitor + tamoxifen -> reduced endoxifen formation.
   const inhibitorId = CYP2D6_INHIBITORS.find(has)
   if (inhibitorId && has('med-tamoxifen') && d6) {
+    const inhibitor = nameOf(inhibitorId)
     return {
       evidenceStatus: 'association_found',
-      summary: `${nameOf(inhibitorId)} is a strong CYP2D6 inhibitor, and tamoxifen needs CYP2D6 to form its active metabolite, endoxifen. With ${lower(d6.phenotype)} CYP2D6 status, this combination is documented to lower endoxifen formation.`,
-      recommendation: 'Consider alternative endocrine therapy or closer monitoring per CPIC guidance.',
+      summary: `${inhibitor} is a strong CYP2D6 inhibitor, and tamoxifen needs CYP2D6 to form its active metabolite, endoxifen. With ${lower(d6.phenotype)} CYP2D6 status, this combination is documented to lower endoxifen formation.`,
       references: [
         {
           source: 'CPIC',
           citation: 'Goetz MP, et al. CPIC Guideline for CYP2D6 and Tamoxifen Therapy.',
-          url: 'https://cpicpgx.org/guidelines/guideline-for-tamoxifen-and-cyp2d6/',
+          // Deep link to this specific guideline page not verified — linking
+          // to the CPIC guidelines index instead of guessing a slug.
+          url: 'https://cpicpgx.org/guidelines/',
         },
         {
           source: 'FDA',
           citation: 'Table of substrates, inhibitors and inducers (drug development and drug interactions).',
+          url: 'https://www.fda.gov/drugs/drug-interactions-labeling/drug-development-and-drug-interactions-table-substrates-inhibitors-and-inducers',
         },
       ],
       limitations: MOCK_LIMITATIONS,
+      mechanism: [
+        geneNode(d6),
+        { kind: 'inhibitor', label: 'Inhibitor on list', title: inhibitor, sub: 'Strong CYP2D6 inhibitor.' },
+        { kind: 'substrate', label: 'Substrate', title: 'Tamoxifen', sub: 'Converted to endoxifen by CYP2D6.' },
+        { kind: 'effect', label: 'Documented effect', title: 'Lower endoxifen exposure', sub: 'Reduced formation of the active metabolite.' },
+      ],
+      evidenceBasis: 'Guideline-supported',
+      ruleId: 'GDD-2D6-TAM-01',
+      ...ENGINE_META,
     }
   }
 
-  // Rule: CYP2D6 inhibitor + an opioid CYP2D6 prodrug -> reduced activation.
-  const opioidId = CYP2D6_PRODRUGS.find((id) => id === 'med-codeine' && has(id))
-  if (inhibitorId && opioidId && d6) {
+  // Rule: CYP2D6 inhibitor + codeine -> reduced opioid activation.
+  if (inhibitorId && has('med-codeine') && d6) {
+    const inhibitor = nameOf(inhibitorId)
     return {
       evidenceStatus: 'association_found',
-      summary: `${nameOf(inhibitorId)} is a strong CYP2D6 inhibitor, and ${nameOf(opioidId).toLowerCase()} relies on CYP2D6 to form its active opioid metabolite. With ${lower(d6.phenotype)} CYP2D6 status, the combination is documented to reduce activation.`,
-      recommendation: 'Consider an alternative analgesic not primarily dependent on CYP2D6 activation.',
+      summary: `${inhibitor} is a strong CYP2D6 inhibitor, and codeine relies on CYP2D6 to form its active opioid metabolite. With ${lower(d6.phenotype)} CYP2D6 status, the combination is documented to reduce activation.`,
       references: [
         {
           source: 'CPIC',
           citation: 'Crews KR, et al. CPIC Guideline for CYP2D6, OPRM1 and COMT Genotypes and Select Opioid Therapy.',
-          url: 'https://cpicpgx.org/guidelines/guideline-for-codeine-and-cyp2d6/',
+          url: 'https://cpicpgx.org/guidelines/',
         },
       ],
       limitations: MOCK_LIMITATIONS,
+      mechanism: [
+        geneNode(d6),
+        { kind: 'inhibitor', label: 'Inhibitor on list', title: inhibitor, sub: 'Strong CYP2D6 inhibitor.' },
+        { kind: 'substrate', label: 'Substrate', title: 'Codeine', sub: 'Converted to morphine by CYP2D6.' },
+        { kind: 'effect', label: 'Documented effect', title: 'Reduced analgesic activation', sub: 'Less active metabolite is formed.' },
+      ],
+      evidenceBasis: 'Guideline-supported',
+      ruleId: 'GDD-2D6-OPI-01',
+      ...ENGINE_META,
     }
   }
 
@@ -103,45 +156,63 @@ export function evaluateCombination(
           {
             source: 'CPIC',
             citation: 'Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.',
-            url: 'https://cpicpgx.org/guidelines/guideline-for-clopidogrel-and-cyp2c19/',
+            url: 'https://cpicpgx.org/guidelines/',
           },
         ],
         limitations: [...MOCK_LIMITATIONS, 'This is not a finding of no association.'],
+        mechanism: [
+          { kind: 'missing', label: 'Patient genotype', title: 'CYP2C19: not tested', sub: 'No result on file. The gene-dependent part of the rule cannot be evaluated.' },
+          { kind: 'inhibitor', label: 'Inhibitor on list', title: 'Omeprazole', sub: 'Inhibits CYP2C19.' },
+          { kind: 'substrate', label: 'Substrate', title: 'Clopidogrel', sub: 'Prodrug activated by CYP2C19.' },
+          { kind: 'unknown', label: 'Documented effect', title: 'Cannot be graded', sub: 'The size of the effect depends on the missing result.' },
+        ],
+        missingData: ['CYP2C19 genotype or phenotype is not available for this patient.'],
+        evidenceBasis: 'Incomplete input',
+        ruleId: 'GDD-2C19-CLO-01',
+        ...ENGINE_META,
       }
     }
     return {
       evidenceStatus: 'association_found',
       summary: `Omeprazole inhibits CYP2C19, which clopidogrel needs for activation. With ${lower(c19.phenotype)} CYP2C19 status, the combination is documented to reduce antiplatelet activation.`,
-      recommendation: 'Review for an alternative proton pump inhibitor with weaker CYP2C19 inhibition.',
       references: [
         {
           source: 'CPIC',
           citation: 'Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.',
-          url: 'https://cpicpgx.org/guidelines/guideline-for-clopidogrel-and-cyp2c19/',
+          url: 'https://cpicpgx.org/guidelines/',
         },
       ],
       limitations: MOCK_LIMITATIONS,
+      mechanism: [
+        geneNode(c19),
+        { kind: 'inhibitor', label: 'Inhibitor on list', title: 'Omeprazole', sub: 'Inhibits CYP2C19.' },
+        { kind: 'substrate', label: 'Substrate', title: 'Clopidogrel', sub: 'Prodrug activated by CYP2C19.' },
+        { kind: 'effect', label: 'Documented effect', title: 'Reduced antiplatelet activation', sub: 'Lower exposure to the active metabolite.' },
+      ],
+      evidenceBasis: 'Guideline-supported',
+      ruleId: 'GDD-2C19-CLO-01',
+      ...ENGINE_META,
     }
   }
 
-  // Default: no curated rule matched. Check whether a gene relevant to any
-  // selected medication has no result for this patient before concluding
-  // "no documented association" vs. "insufficient evidence".
-  const relevantGenes = [...new Set(medicationIds.map((id) => RELEVANT_GENE[id]).filter(Boolean))]
-  const missingGene = relevantGenes.some((gene) => !geneState(patient, gene))
+  // Default: no curated rule matched. Render per-pair checks instead of a
+  // mechanism flow, and decide "no documented association" vs. "insufficient
+  // evidence" by whether a gene relevant to any selected medication is untested.
+  const checks = buildChecks(patient, medicationIds, medsById)
+  const anyMissing = checks.some((c) => c.missing)
 
-  if (missingGene) {
+  if (anyMissing) {
     return {
       evidenceStatus: 'insufficient_evidence',
       summary:
         'No curated association matched, and at least one gene needed for these medications has no result for this patient. The engine cannot tell whether an association would apply.',
-      references: [
-        {
-          source: 'Rule set',
-          citation: 'Curated gene-drug-drug entries searched against the supported rule set.',
-        },
-      ],
+      references: [{ source: 'Rule set', citation: 'Curated gene-drug-drug entries searched against the supported rule set.' }],
       limitations: MOCK_LIMITATIONS,
+      checks,
+      missingData: ['One or more genes relevant to these medications are not tested for this patient.'],
+      evidenceBasis: 'Incomplete input',
+      ruleId: '—',
+      ...ENGINE_META,
     }
   }
 
@@ -149,12 +220,11 @@ export function evaluateCombination(
     evidenceStatus: 'no_documented_association',
     summary:
       "No curated gene-drug-drug association matches this patient's genotype and medication list in the supported rule set.",
-    references: [
-      {
-        source: 'Rule set',
-        citation: 'Curated gene-drug-drug entries searched. None matched this combination.',
-      },
-    ],
+    references: [{ source: 'Rule set', citation: 'Curated gene-drug-drug entries searched. None matched this combination.' }],
     limitations: MOCK_LIMITATIONS,
+    checks,
+    evidenceBasis: 'Rule set searched',
+    ruleId: '—',
+    ...ENGINE_META,
   }
 }
