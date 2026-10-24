@@ -38,7 +38,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_ROOT))
 
 from app.services.molecular.features import fingerprint_metadata, smiles_to_fingerprint  # noqa: E402
-from ml.data_prep import load_clean_dataset  # noqa: E402
+from ml.data_prep import SPLIT_METHOD, load_clean_dataset, scaffold_split  # noqa: E402
 
 RANDOM_SEED = 42
 N_ESTIMATORS = 120
@@ -50,19 +50,6 @@ METADATA_PATH = MODELS_DIR / "cyp2d6_model_metadata.json"
 def build_features(smiles_list: list[str]) -> np.ndarray:
     feats = [smiles_to_fingerprint(s) for s in smiles_list]
     return np.vstack(feats)
-
-
-def scaffold_split(smiles: list[str], labels: np.ndarray):
-    from skfp.model_selection import scaffold_train_valid_test_split
-
-    train_s, valid_s, test_s, train_y, valid_y, test_y = scaffold_train_valid_test_split(
-        smiles,
-        labels,
-        train_size=0.8,
-        valid_size=0.1,
-        test_size=0.1,
-    )
-    return (train_s, train_y), (valid_s, valid_y), (test_s, test_y)
 
 
 def ensure_both_classes(name: str, y: np.ndarray):
@@ -173,7 +160,7 @@ def main():
             "source": data_report["source"],
         },
         "dataPreparation": {k: v for k, v in data_report.items() if k not in ("dataset", "license", "source")},
-        "splitMethod": "Bemis-Murcko scaffold split (80/10/10)",
+        "splitMethod": SPLIT_METHOD,
         "metrics": metrics,
         "trainedAtUnix": time.time(),
         "limitations": [

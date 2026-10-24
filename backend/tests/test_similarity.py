@@ -32,4 +32,4 @@ def test_reference_index_available_and_returns_top_k():
     sims = [n["tanimotoSimilarity"] for n in neighbors]
     assert sims == sorted(sims, reverse=True)
     for n in neighbors:
-        assert n["identifier"].startswith("CYP2D6_Veith#")
+        assert n["identifier"].startswith("CYP2D6_Veith_train#")

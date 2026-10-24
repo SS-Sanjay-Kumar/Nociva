@@ -20,6 +20,7 @@ from app.services.molecular.features import validate_and_canonicalize  # noqa: E
 DATASET_NAME = "TDC CYP2D6_Veith"
 DATASET_LICENSE = "CC BY 4.0"
 DATASET_SOURCE = "skfp.datasets.tdc.adme.load_cyp2d6_veith (TDC via Hugging Face Hub)"
+SPLIT_METHOD = "Bemis-Murcko scaffold split (80/10/10)"
 
 
 def load_raw() -> pd.DataFrame:
@@ -66,6 +67,26 @@ def clean(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
 def load_clean_dataset() -> tuple[pd.DataFrame, dict]:
     raw = load_raw()
     return clean(raw)
+
+
+def scaffold_split(smiles: list[str], labels):
+    """Bemis-Murcko scaffold train/valid/test split, shared by the classifier
+    training script and the reference-index build script so both agree on
+    exactly which compounds are "training data". skfp's scaffold splitter
+    takes no random_state — it buckets by deterministic scaffold grouping,
+    so calling it twice with the same (smiles, labels) in the same order
+    always reproduces the identical split.
+    """
+    from skfp.model_selection import scaffold_train_valid_test_split
+
+    train_s, valid_s, test_s, train_y, valid_y, test_y = scaffold_train_valid_test_split(
+        smiles,
+        labels,
+        train_size=0.8,
+        valid_size=0.1,
+        test_size=0.1,
+    )
+    return (train_s, train_y), (valid_s, valid_y), (test_s, test_y)
 
 
 if __name__ == "__main__":

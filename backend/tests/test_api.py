@@ -54,14 +54,28 @@ def test_analyze_below_reporting_threshold_returns_empty_neighbors_with_max_simi
 
 
 def test_analyze_flags_exact_training_set_member():
-    # This exact canonical SMILES is reference-index entry CYP2D6_Veith#0.
-    training_smiles = "O=C(O)c1c2c(c(O)c3c1CN(C1CCCCC1)CO3)OCN(C1CCCCC1)C2"
+    # This exact canonical SMILES is reference-index entry
+    # CYP2D6_Veith_train#0 — i.e. an actual member of the classifier's
+    # training split (see ml/build_reference_index.py), not just some
+    # arbitrary compound from the full dataset.
+    training_smiles = "COc1c(O)cc2c(c1O)[C@@H]1O[C@@H](CO)[C@@H](O)[C@@H](O)[C@@H]1OC2=O.O"
     r = client.post("/api/molecular/analyze", json={"smiles": training_smiles})
     assert r.status_code == 200
     body = r.json()
     assert body["valid"] is True
     assert body["inTrainingSet"] is True
     assert body["maxSimilarity"] == 1.0
+
+
+def test_reference_set_size_matches_training_split_size():
+    # The reference index must be built from the classifier's training
+    # split only — referenceSetSize should equal metrics.nTrain exactly,
+    # not some unrelated fixed cap.
+    info = client.get("/api/molecular/model-info").json()
+    r = client.post("/api/molecular/analyze", json={"smiles": "CCO"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["provenance"]["referenceSetSize"] == info["metrics"]["nTrain"]
 
 
 def test_analyze_aspirin_is_not_flagged_as_training_set_member():
