@@ -29,6 +29,27 @@ def test_analyze_valid_smiles():
     assert len(body["neighbors"]) == 5
     assert "cyp2d6" in body
     assert body["error"] is None
+    # Additive fields for the Molecular Explorer query-structure card.
+    assert body["queryImageBase64"]
+    assert body["molecularFormula"] == "C9H8O4"
+    assert body["molecularWeight"] > 0
+    assert body["maxSimilarity"] == body["neighbors"][0]["tanimotoSimilarity"]
+    # Additive provenance fields for the method line / model evaluation panel.
+    assert body["provenance"]["fingerprint"]["nBits"] == 2048
+    assert body["provenance"]["referenceSetSize"] > 0
+    assert body["provenance"]["reportingThreshold"] == 0.30
+
+
+def test_analyze_below_reporting_threshold_returns_empty_neighbors_with_max_similarity():
+    # [Xe] (xenon) has ~0.03 max Tanimoto similarity to the reference set,
+    # well below the 0.30 reporting threshold.
+    r = client.post("/api/molecular/analyze", json={"smiles": "[Xe]"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["valid"] is True
+    assert body["neighbors"] == []
+    assert body["maxSimilarity"] is not None
+    assert body["maxSimilarity"] < body["provenance"]["reportingThreshold"]
 
 
 def test_analyze_invalid_smiles():
