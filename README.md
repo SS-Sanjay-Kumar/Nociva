@@ -1,20 +1,41 @@
 # GeneCollision
 
-Monorepo for the GeneCollision hackathon project.
+Monorepo for the GeneCollision hackathon project: a patient's pharmacogenetic
+profile checked against their medications, plus a separate experimental
+molecular-similarity and CYP2D6-inhibition tool.
 
 ```
 GeneCollision/
   backend/     FastAPI backend (Python)
+    app/
+      main.py            Minimal scaffold entry point — see "What's real" below
+      routers/molecular.py        Stream 1 API router
+      services/molecular/         Fingerprinting, similarity search, classifier inference
+      schemas/molecular.py        Pydantic request/response models
+    ml/        Dataset prep, training, reference-index build scripts
+    models/    Trained artifacts (gitignored — regenerate, don't commit)
+    tests/     pytest suite (26 tests)
   frontend/    React + TypeScript + Vite + Tailwind frontend
+    src/
+      features/review/      Medication Review (mock-mode feature)
+      features/molecular/   Molecular Explorer (live-API feature)
+      components/ui/        Shared design-system primitives
+      components/shell/     Sidebar, Topbar, Footer
+  INTEGRATION.md   API contracts, both implemented and expected
+  DEMO.md          2-minute demo script
 ```
 
-This branch (`feature/stream1-molecular-frontend`) contains:
-- The full frontend (Medication Review UI in demonstration/mock mode, Molecular Explorer UI)
-- **Stream 1: Molecular Intelligence Engine** — RDKit similarity search + a locally-trained
-  scikit-learn CYP2D6 inhibition classifier, exposed as an independent FastAPI router
+`features/review` and `features/molecular` never import from each other
+(enforced by an oxlint `no-restricted-imports` rule) — the only bridge
+between them is a plain navigation link.
 
-See [INTEGRATION.md](./INTEGRATION.md) for the API contract and how a teammate's
-Supabase-backed backend should merge with this work.
+## What's real vs. what's mocked
+
+| Area | Status |
+|---|---|
+| **Medication Review** | Frontend only, running against **typed mock fixtures** (`frontend/src/features/review/mocks/`). No backend call is made. Every result is labelled a demonstration fixture. The deterministic rule-engine backend this page expects does not exist yet — see INTEGRATION.md §3 for the contract a teammate needs to implement. |
+| **Molecular Explorer** | **Live** against the local FastAPI service: real RDKit validation/canonicalisation/2D rendering, real Tanimoto similarity search over a 4,000-compound reference index, and a real scikit-learn RandomForestClassifier trained on TDC CYP2D6_Veith. Nothing here is faked; if the backend is down or the model isn't trained, the UI says so explicitly instead of inventing a result. |
+| **`backend/app/main.py`** | A **minimal stand-in**, not a competing backend — it existed only because no backend file existed yet when Stream 1 started. It wires up CORS, `/health`, and `app.include_router(molecular_router)`. The teammate's Supabase-backed backend should replace or absorb this file; see INTEGRATION.md §1 for the two-line merge. |
 
 ## Prerequisites
 
@@ -54,10 +75,11 @@ source .venv/bin/activate
 python -m pytest tests/ -v
 ```
 
-All 23 tests cover: fingerprint validity/reproducibility, data cleaning (invalid SMILES,
-duplicates, conflicting labels), Tanimoto similarity, scaffold train/val/test separation,
-classifier loading/inference determinism, and the HTTP API (valid/invalid/empty/oversized
-input, response shape, idempotency).
+All 26 tests cover: fingerprint validity/reproducibility, data cleaning (invalid SMILES,
+duplicates, conflicting labels), Tanimoto similarity (including the reporting-threshold
+empty-neighbours case and training-set membership flagging), scaffold train/val/test
+separation, classifier loading/inference determinism, and the HTTP API (valid/invalid/
+empty/oversized input, response shape, idempotency).
 
 ## Frontend: setup and run
 
@@ -70,17 +92,20 @@ npm run dev
 
 Open http://localhost:5173.
 
-- **Medication Review** — always runs in clearly-labelled mock mode (synthetic patients,
-  hand-authored evidence fixtures). Works with or without any backend running.
-- **Molecular Explorer** — calls the local FastAPI service above. If the backend isn't
-  running or the model isn't trained yet, the page shows an explicit unavailable/untrained
-  state rather than fabricating results.
+### Environment variables (`.env.local`, see `.env.example`)
 
-### Frontend build check
+| Variable | Default | Meaning |
+|---|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Base URL the Molecular Explorer's API client calls. |
+| `VITE_FORCE_MOCK` | `false` | Currently unused — Medication Review mock mode is hardcoded on (see `src/lib/config.ts`) because no live contract exists yet. Reserved for when it does. |
+
+### Frontend checks
 
 ```bash
 cd frontend
-npm run build
+npm run build   # TypeScript + Vite production build
+npm run lint    # oxlint, including the feature-isolation rule
+npm test        # Vitest + React Testing Library
 ```
 
 ## Dataset & licensing
@@ -92,6 +117,13 @@ npm run build
   locally under `~/scikit_learn_data`.
 - No paid APIs, no paid inference, no GPU required. All ML training and inference run
   locally with scikit-learn on CPU.
+
+## Docs
+
+- [INTEGRATION.md](./INTEGRATION.md) — API contracts (implemented and expected), how to
+  mount the Stream 1 router into the teammate's backend, how to switch Medication Review
+  off mock mode.
+- [DEMO.md](./DEMO.md) — a 2-minute walkthrough script.
 
 ## Git
 

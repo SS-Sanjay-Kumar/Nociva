@@ -6,17 +6,17 @@ backend contract once it exists.
 
 ## 1. Mounting the Stream 1 router into the real app
 
-`backend/app/main.py` in this branch is a **minimal scaffold** created only
-because no backend file existed yet on this branch. It is not a competing
-backend — it exists to make Stream 1 runnable in isolation.
+`backend/app/main.py` on this branch is a **minimal scaffold** created only
+because no backend file existed yet when Stream 1 started. It is not a
+competing backend — it exists to make Stream 1 runnable in isolation.
 
 If you already have (or are building) `backend/app/main.py` with Supabase
 wiring, routes, etc., do **not** let this branch overwrite it. Instead, pull
 in two things from this branch:
 
 1. `backend/app/routers/molecular.py` and everything under
-   `backend/app/services/molecular/` — fully self-contained, no shared-state
-   dependencies.
+   `backend/app/services/molecular/` and `backend/app/schemas/molecular.py` —
+   fully self-contained, no shared-state dependencies.
 2. One include line in your `main.py`:
 
 ```python
@@ -45,31 +45,43 @@ a patch.
 ```
 
 ### `GET /api/molecular/model-info`
-Returns classifier metadata and, once trained, real measured evaluation
-metrics (see `backend/models/cyp2d6_model_metadata.json` for the actual
-numbers from the last training run).
 
-```ts
-interface ModelInfoResponse {
-  trained: boolean
-  modelType: string                 // "RandomForestClassifier"
-  nEstimators?: number
-  fingerprint: { type: string; radius: number; nBits: number }
-  dataset: { name: string; license: string; source: string }
-  metrics?: {
-    auprc: number
-    rocAuc: number | null
-    precision: number
-    recall: number
-    f1: number
-    confusionMatrix: number[][]
-    positiveClassPrevalence: number
-    nTrain: number
-    nValidation: number
-    nTest: number
-  }
+Real response from this backend's last training run (`curl -s
+http://localhost:8000/api/molecular/model-info`):
+
+```json
+{
+  "trained": true,
+  "modelType": "RandomForestClassifier",
+  "nEstimators": 120,
+  "fingerprint": { "type": "morgan", "radius": 2, "nBits": 2048 },
+  "dataset": {
+    "name": "TDC CYP2D6_Veith",
+    "license": "CC BY 4.0",
+    "source": "skfp.datasets.tdc.adme.load_cyp2d6_veith (TDC via Hugging Face Hub)"
+  },
+  "metrics": {
+    "auprc": 0.7041078415501184,
+    "rocAuc": 0.8515490728177296,
+    "precision": 0.6645161290322581,
+    "recall": 0.6688311688311688,
+    "f1": 0.6666666666666666,
+    "confusionMatrix": [[901, 104], [102, 206]],
+    "positiveClassPrevalence": 0.2345773038842346,
+    "nTrain": 10504,
+    "nValidation": 1313,
+    "nTest": 1313,
+    "decisionThreshold": 0.425
+  },
+  "splitMethod": "Bemis-Murcko scaffold split (80/10/10)",
+  "randomSeed": 42
 }
 ```
+
+When the model hasn't been trained yet (no `backend/models/*.joblib`),
+`trained` is `false`, `metrics` is `null`, and `splitMethod`/`randomSeed` are
+omitted — the frontend shows "Model not trained yet" with the training
+command instead of fabricating numbers.
 
 ### `POST /api/molecular/analyze`
 
@@ -81,37 +93,94 @@ Request:
 return `422` automatically, no custom error handling needed on the frontend
 beyond catching non-2xx).
 
-Response (`200`, valid input):
-```ts
-interface MolecularAnalyzeResponse {
-  inputSmiles: string
-  canonicalSmiles: string | null   // null only if valid === false
-  valid: boolean
-  neighbors: {
-    identifier: string             // e.g. "CYP2D6_Veith#846" — dataset has no compound names
-    smiles: string
-    canonicalSmiles: string
-    tanimotoSimilarity: number      // 0..1
-    imageBase64: string | null      // PNG, base64, no data: prefix
-  }[]                                // always length 5 when valid
-  cyp2d6: {
-    modelTrained: boolean
-    prediction?: {
-      predictedClass: "inhibitor" | "non_inhibitor"
-      rawScore: number              // uncalibrated model score, not a probability
-      scoreCalibrated: boolean      // always false currently
-      applicabilityWarning?: string | null
+Real response for aspirin (`curl -s -X POST
+http://localhost:8000/api/molecular/analyze -d '{"smiles":"CC(=O)Oc1ccccc1C(=O)O"}'`,
+`queryImageBase64`/`imageBase64` omitted here for length — they're real PNG
+base64 strings in the live response, truncated to 2 of 5 neighbours):
+
+```json
+{
+  "inputSmiles": "CC(=O)Oc1ccccc1C(=O)O",
+  "canonicalSmiles": "CC(=O)Oc1ccccc1C(=O)O",
+  "valid": true,
+  "molecularFormula": "C9H8O4",
+  "molecularWeight": 180.16,
+  "neighbors": [
+    {
+      "identifier": "CYP2D6_Veith#846",
+      "smiles": "O=C(O)CSc1ccccc1C(=O)O",
+      "canonicalSmiles": "O=C(O)CSc1ccccc1C(=O)O",
+      "tanimotoSimilarity": 0.3611111111111111
+    },
+    {
+      "identifier": "CYP2D6_Veith#497",
+      "smiles": "O=C(O)c1ccc(C(=O)O)c2c(C(=O)O)ccc(C(=O)O)c12",
+      "canonicalSmiles": "O=C(O)c1ccc(C(=O)O)c2c(C(=O)O)ccc(C(=O)O)c12",
+      "tanimotoSimilarity": 0.35714285714285715
     }
-  }
-  provenance: { dataset: string; license: string; method: string }
-  limitations: string[]
-  error: string | null
+  ],
+  "maxSimilarity": 0.3611111111111111,
+  "inTrainingSet": false,
+  "cyp2d6": {
+    "modelTrained": true,
+    "prediction": {
+      "predictedClass": "non_inhibitor",
+      "rawScore": 0.016666666666666666,
+      "scoreCalibrated": false,
+      "applicabilityWarning": null
+    }
+  },
+  "provenance": {
+    "dataset": "TDC CYP2D6_Veith",
+    "license": "CC BY 4.0",
+    "method": "Morgan fingerprints (radius=2, 2048 bits) + Tanimoto similarity against a cached reference index; CYP2D6 inhibition classified by a locally-trained scikit-learn RandomForestClassifier.",
+    "fingerprint": { "type": "morgan", "radius": 2, "nBits": 2048 },
+    "referenceSetSize": 4000,
+    "reportingThreshold": 0.3
+  },
+  "limitations": [
+    "Predicts an experimental in-vitro CYP2D6 inhibition assay label, not clinical toxicity, drug-drug-gene outcomes, or patient-specific adverse reactions.",
+    "Molecular similarity does not establish a clinically important interaction.",
+    "This result is never fed into the deterministic clinical verdict used in Medication Review."
+  ],
+  "error": null
 }
 ```
 
-Response when `valid: false` (RDKit could not parse the input): `neighbors`
-is `[]`, `canonicalSmiles` is `null`, `error` explains why. Still HTTP `200`
-— this is a normal "unsupported input" result, not a server error.
+Field notes:
+- `neighbors` has **0 to 5** entries — only compounds at or above
+  `provenance.reportingThreshold` (currently `0.30`) are included. When none
+  clear the threshold, `neighbors` is `[]` but `maxSimilarity` still reports
+  the highest score found, so the UI can say e.g. "nothing reached 0.30, the
+  closest was 0.12" instead of just going blank.
+- `inTrainingSet` is `true` when the canonical SMILES exactly matches a
+  reference-index compound, or max Tanimoto similarity is `>= 0.999` — i.e.
+  the CYP2D6 score reflects memorisation of that exact training example, not
+  generalisation.
+- `queryImageBase64` / `neighbors[].imageBase64` are PNG, base64-encoded, no
+  `data:` prefix (the frontend prepends `data:image/png;base64,`).
+
+Real response for an invalid SMILES (`curl ... -d
+'{"smiles":"not-a-smiles((("}'`) — still HTTP `200`, this is a normal
+"unsupported input" result, not a server error:
+
+```json
+{
+  "inputSmiles": "not-a-smiles(((",
+  "canonicalSmiles": null,
+  "valid": false,
+  "queryImageBase64": null,
+  "molecularFormula": null,
+  "molecularWeight": null,
+  "neighbors": [],
+  "maxSimilarity": null,
+  "inTrainingSet": false,
+  "cyp2d6": { "modelTrained": true, "prediction": null },
+  "provenance": { "...": "same shape as above" },
+  "limitations": ["...": "same three limitations"],
+  "error": "Input is not a valid SMILES string that RDKit can parse."
+}
+```
 
 ## 3. Medication Review: current state and backend contract needed
 
@@ -135,6 +204,17 @@ Types (`frontend/src/types/index.ts`) are the authoritative shape:
 `PatientProfile`, `Medication`, `AssessmentResult`, `ClinicalVerdict`,
 `EvidenceStatus` (`"association_found" | "no_documented_association" |
 "insufficient_evidence"`).
+
+`AssessmentResult`:
+```ts
+interface AssessmentResult {
+  patientId: string
+  medications: Medication[]   // the full list this one verdict covers
+  verdict: ClinicalVerdict
+  generatedAt: string         // ISO 8601
+  isMock: boolean             // true for every fixture response; your backend returns false
+}
+```
 
 `ClinicalVerdict`'s required fields are `evidenceStatus`, `summary`,
 `references`, `limitations`. The rest are optional and additive — the UI
@@ -171,24 +251,97 @@ interface FlowNode {
 }
 
 interface CheckItem {
-  label: string   // e.g. "Metoprolol × Warfarin"
-  note: string    // e.g. "CYP2D6 normal metabolizer  ·  CYP2C9 normal metabolizer"
+  label: string    // e.g. "Metoprolol × Warfarin"
+  note: string     // e.g. "CYP2D6 normal metabolizer  ·  CYP2C9 normal metabolizer"
   missing: boolean // true if a gene needed for this pair has no result
 }
 ```
 
-See `frontend/src/features/review/mocks/assessments.ts` for worked examples
-of all three evidence statuses, including the `mechanism` vs. `checks`
-branching logic.
+### Worked example per evidence status
 
-To switch Medication Review from mock to live once your contract exists:
+These mirror exactly what `frontend/src/features/review/mocks/assessments.ts`
+returns for the three demo scenarios — use them as a template for your real
+responses.
+
+**`association_found`** (paroxetine + tamoxifen, CYP2D6 intermediate metabolizer):
+```json
+{
+  "evidenceStatus": "association_found",
+  "summary": "Paroxetine is a strong CYP2D6 inhibitor, and tamoxifen needs CYP2D6 to form its active metabolite, endoxifen. With intermediate metabolizer CYP2D6 status, this combination is documented to lower endoxifen formation.",
+  "references": [
+    { "source": "CPIC", "citation": "Goetz MP, et al. CPIC Guideline for CYP2D6 and Tamoxifen Therapy.", "url": "https://cpicpgx.org/guidelines/" }
+  ],
+  "limitations": ["Demonstration fixture — not a live clinical decision."],
+  "mechanism": [
+    { "kind": "gene", "label": "Patient genotype", "title": "CYP2D6 *1/*4", "sub": "intermediate metabolizer · activity score 1.0" },
+    { "kind": "inhibitor", "label": "Inhibitor on list", "title": "Paroxetine", "sub": "Strong CYP2D6 inhibitor." },
+    { "kind": "substrate", "label": "Substrate", "title": "Tamoxifen", "sub": "Converted to endoxifen by CYP2D6." },
+    { "kind": "effect", "label": "Documented effect", "title": "Lower endoxifen exposure", "sub": "Reduced formation of the active metabolite." }
+  ],
+  "evidenceBasis": "Guideline-supported",
+  "ruleId": "GDD-2D6-TAM-01",
+  "engineVersion": "Rules engine v0.3 (demo)",
+  "evidenceSnapshot": "2026-10-20"
+}
+```
+
+**`no_documented_association`** (metoprolol + warfarin, no CYP2D6/CYP2C9-mediated interaction documented):
+```json
+{
+  "evidenceStatus": "no_documented_association",
+  "summary": "No curated gene-drug-drug association matches this patient's genotype and medication list in the supported rule set.",
+  "references": [{ "source": "Rule set", "citation": "Curated gene-drug-drug entries searched. None matched this combination." }],
+  "limitations": ["Demonstration fixture — not a live clinical decision."],
+  "checks": [
+    { "label": "Metoprolol × Warfarin", "note": "CYP2D6 normal metabolizer  ·  CYP2C9 normal metabolizer", "missing": false }
+  ],
+  "evidenceBasis": "Rule set searched",
+  "ruleId": "—",
+  "engineVersion": "Rules engine v0.3 (demo)",
+  "evidenceSnapshot": "2026-10-20"
+}
+```
+
+**`insufficient_evidence`** (clopidogrel + omeprazole, patient has no CYP2C19 result):
+```json
+{
+  "evidenceStatus": "insufficient_evidence",
+  "summary": "A drug-drug association between omeprazole and clopidogrel is documented, but this patient has no CYP2C19 result. The engine cannot assess how their genotype changes it.",
+  "references": [
+    { "source": "CPIC", "citation": "Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.", "url": "https://cpicpgx.org/guidelines/" }
+  ],
+  "limitations": ["Demonstration fixture — not a live clinical decision.", "This is not a finding of no association."],
+  "mechanism": [
+    { "kind": "missing", "label": "Patient genotype", "title": "CYP2C19: not tested", "sub": "No result on file. The gene-dependent part of the rule cannot be evaluated." },
+    { "kind": "inhibitor", "label": "Inhibitor on list", "title": "Omeprazole", "sub": "Inhibits CYP2C19." },
+    { "kind": "substrate", "label": "Substrate", "title": "Clopidogrel", "sub": "Prodrug activated by CYP2C19." },
+    { "kind": "unknown", "label": "Documented effect", "title": "Cannot be graded", "sub": "The size of the effect depends on the missing result." }
+  ],
+  "missingData": ["CYP2C19 genotype or phenotype is not available for this patient."],
+  "evidenceBasis": "Incomplete input",
+  "ruleId": "GDD-2C19-CLO-01",
+  "engineVersion": "Rules engine v0.3 (demo)",
+  "evidenceSnapshot": "2026-10-20"
+}
+```
+
+Regardless of what `summary` says, the frontend **always** renders its own
+hard-coded safety callout for `no_documented_association` ("This is not a
+safety finding...") and `insufficient_evidence` ("An unresolved result is not
+reassurance...") — see `frontend/src/features/review/copy.ts`. Your backend
+text doesn't need to repeat that framing; the UI guarantees it regardless.
+
+### Switching Medication Review off mock mode
+
 1. In `frontend/src/features/review/api.ts`, replace the mock-returning
    bodies of `fetchPatients`, `fetchMedications`, `runAssessment` with
-   `apiRequest<T>(...)` calls (the central client in `api/client.ts`).
+   `apiRequest<T>(...)` calls (the central client in `frontend/src/api/client.ts`).
 2. Flip `MEDICATION_REVIEW_MOCK_MODE` in `frontend/src/lib/config.ts` to a
    runtime/env-driven flag instead of a hardcoded `true`.
-3. No other file needs to change — pages/components consume the hook
-   (`useMedicationAssessment`), not the API module directly.
+3. No other file needs to change — components consume the hook
+   (`useMedicationAssessment`), not the API module directly. The topbar's
+   "Demo fixtures, not a live engine" chip (`frontend/src/components/shell/Topbar.tsx`)
+   automatically switches to "Deterministic engine v0.3" once mock mode is off.
 
 **Important constraint carried over from Stream 1 design:** the CYP2D6 ML
 classifier's output must never be fed into this deterministic verdict. If
