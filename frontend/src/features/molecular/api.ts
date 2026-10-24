@@ -1,12 +1,11 @@
-import { apiRequest } from './client'
-import type { MolecularAnalysisResponse, ModelInfo } from '../types'
+import { apiRequest } from '../../api/client'
+import type { MolecularAnalysisResponse, ModelInfo } from '../../types'
 
 /**
  * Molecular Intelligence Engine API adapter (Stream 1).
  * Talks to the local FastAPI service at POST /api/molecular/analyze and
- * GET /api/molecular/model-info. This is a real backend integration, not
- * a mock — if the local service is unavailable, callers get a thrown
- * ApiError which the UI renders as a service-unavailable state.
+ * GET /api/molecular/model-info. Real backend integration, not a mock —
+ * callers get a thrown ApiError if the local service is unavailable.
  */
 
 export async function analyzeMolecule(smiles: string): Promise<MolecularAnalysisResponse> {

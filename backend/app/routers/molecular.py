@@ -126,5 +126,8 @@ def model_info() -> ModelInfoResponse:
             nTrain=m["nTrain"],
             nValidation=m["nValidation"],
             nTest=m["nTest"],
+            decisionThreshold=m.get("decisionThreshold"),
         ),
+        splitMethod=metadata.get("splitMethod"),
+        randomSeed=metadata.get("randomSeed"),
     )

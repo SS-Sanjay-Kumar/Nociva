@@ -1,8 +1,8 @@
-import type { AssessmentResult, Medication, PatientProfile } from '../types'
-import { MOCK_PATIENTS } from '../mocks/patients'
-import { MOCK_MEDICATIONS } from '../mocks/medications'
-import { getMockAssessment } from '../mocks/assessments'
-import { MEDICATION_REVIEW_MOCK_MODE } from '../lib/config'
+import type { AssessmentResult, Medication, PatientProfile } from '../../types'
+import { MOCK_PATIENTS } from './mocks/patients'
+import { MOCK_MEDICATIONS } from './mocks/medications'
+import { evaluateCombination } from './mocks/assessments'
+import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
 
 /**
  * Medication Review API adapter.
@@ -39,24 +39,37 @@ export async function fetchMedications(query = ''): Promise<Medication[]> {
   throw new Error('Live Medication Review backend not yet integrated.')
 }
 
+/** Runs one deterministic assessment for the whole selected medication list. */
 export async function runAssessment(
   patient: PatientProfile,
   medicationIds: string[],
-): Promise<AssessmentResult[]> {
+  options: { simulateError?: boolean } = {},
+): Promise<AssessmentResult> {
   if (!MEDICATION_REVIEW_MOCK_MODE) {
     throw new Error('Live Medication Review backend not yet integrated.')
   }
 
-  const cyp2d6 = patient.genotypes.find((g) => g.gene === 'CYP2D6')
+  if (options.simulateError) {
+    await delay(null, 700)
+    throw new Error('ENGINE_TIMEOUT')
+  }
 
-  const results: AssessmentResult[] = medicationIds.map((medicationId) => {
-    const medication = MOCK_MEDICATIONS.find((m) => m.id === medicationId)
-    if (!medication) {
-      throw new Error(`Unknown medication id: ${medicationId}`)
-    }
-    const mockResult = getMockAssessment(patient.id, medicationId, cyp2d6?.phenotype)
-    return { ...mockResult, medication }
+  const medsById = new Map(MOCK_MEDICATIONS.map((m) => [m.id, m]))
+  const medications = medicationIds.map((id) => {
+    const med = medsById.get(id)
+    if (!med) throw new Error(`Unknown medication id: ${id}`)
+    return med
   })
 
-  return delay(results, 700)
+  const verdict = evaluateCombination(patient, medicationIds, medsById)
+
+  const result: AssessmentResult = {
+    patientId: patient.id,
+    medications,
+    verdict,
+    generatedAt: new Date().toISOString(),
+    isMock: true,
+  }
+
+  return delay(result, 700)
 }

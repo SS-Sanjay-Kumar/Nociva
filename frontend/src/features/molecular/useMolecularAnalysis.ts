@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
-import type { MolecularAnalysisResponse, RequestState } from '../types'
-import { analyzeMolecule } from '../api/molecularApi'
-import { isApiError } from '../api/client'
+import type { MolecularAnalysisResponse, RequestState } from '../../types'
+import { analyzeMolecule } from './api'
+import { isApiError } from '../../api/client'
 
 export function useMolecularAnalysis() {
   const [state, setState] = useState<RequestState>('idle')

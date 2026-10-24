@@ -16,12 +16,17 @@ export type Phenotype =
   | 'normal_metabolizer'
   | 'rapid_metabolizer'
   | 'ultrarapid_metabolizer'
+  | 'non_expresser'
   | 'indeterminate'
 
 export interface Genotype {
   gene: string
-  diplotype: string
-  phenotype: Phenotype
+  diplotype?: string
+  phenotype?: Phenotype
+  /** 0-3 CPIC/DPWG-style activity score, only meaningful for CYP2D6 in this demo. */
+  activityScore?: number
+  /** True when no result is on file for this gene. */
+  missing?: boolean
 }
 
 export interface PatientProfile {
@@ -30,6 +35,8 @@ export interface PatientProfile {
   age: number
   sex: 'female' | 'male' | 'other'
   genotypes: Genotype[]
+  /** Short synthetic clinical context shown as a patient subtitle, e.g. "Adjuvant breast cancer therapy". */
+  context?: string
   notes?: string
 }
 
@@ -67,7 +74,8 @@ export interface ClinicalVerdict {
 
 export interface AssessmentResult {
   patientId: string
-  medication: Medication
+  /** The full medication list this single verdict was evaluated against. */
+  medications: Medication[]
   verdict: ClinicalVerdict
   generatedAt: string
   /** True when this result came from a labelled mock fixture, not a live backend. */
@@ -111,6 +119,7 @@ export interface ModelMetrics {
   nTrain: number
   nValidation: number
   nTest: number
+  decisionThreshold?: number | null
 }
 
 export interface ModelInfo {
@@ -128,6 +137,8 @@ export interface ModelInfo {
     source: string
   }
   metrics?: ModelMetrics
+  splitMethod?: string | null
+  randomSeed?: number | null
 }
 
 export interface MolecularAnalysisResponse {

@@ -67,6 +67,7 @@ class ModelMetrics(BaseModel):
     nTrain: int
     nValidation: int
     nTest: int
+    decisionThreshold: float | None = None
 
 
 class ModelInfoResponse(BaseModel):
@@ -76,3 +77,5 @@ class ModelInfoResponse(BaseModel):
     fingerprint: FingerprintInfo
     dataset: DatasetInfo
     metrics: ModelMetrics | None = None
+    splitMethod: str | None = None
+    randomSeed: int | None = None

@@ -1,12 +1,151 @@
 @import "tailwindcss";
 
+/* Bundled fonts (no CDN at runtime) */
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/manrope/800.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/*
+ * Design tokens ported from design/prototype.html (GENECOLLISION_HANDOFF.md).
+ * Tailwind v4's CSS-native @theme generates both utility classes (bg-navy-900,
+ * font-display, rounded-lg, shadow-sh2, ...) and the equivalent CSS variables
+ * under :root, so this block is both the Tailwind theme config and tokens.css.
+ */
+@theme {
+  --color-navy-950: #071427;
+  --color-navy-900: #0b1f3a;
+  --color-navy-800: #12294a;
+  --color-navy-700: #1d3b66;
+  --color-navy-300: #9fb3cc;
+  --color-navy-200: #c4d2e3;
+
+  --color-ink: #0b1f3a;
+  --color-ink-2: #34485f;
+  --color-ink-3: #5c6e85;
+
+  --color-bg: #f2f5f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f9fc;
+  --color-line: #dce4ee;
+  --color-line-2: #e9eef4;
+
+  --color-teal-900: #0a4f52;
+  --color-teal-700: #0b6f72;
+  --color-teal-600: #0e8588;
+  --color-teal-500: #13a1a3;
+  --color-teal-300: #5fd3d0;
+  --color-teal-100: #cfeded;
+  --color-teal-50: #eaf6f6;
+
+  --color-amber-800: #7a4306;
+  --color-amber-600: #b45f06;
+  --color-amber-200: #efd39a;
+  --color-amber-100: #fbebc6;
+  --color-amber-50: #fff7e6;
+
+  --color-exp-800: #3f3590;
+  --color-exp-600: #5b4dbb;
+  --color-exp-300: #b7aee6;
+  --color-exp-200: #d5cff1;
+  --color-exp-50: #f4f2fd;
+
+  --color-crit-700: #a61e14;
+  --color-crit-200: #f5c2bd;
+  --color-crit-50: #fef2f1;
+
+  --color-slate-100: #e9eef7;
+  --color-slate-200: #dde5f0;
+  --color-slate-300: #c9d4e3;
+
+  --color-atom-n: #2f4fbf;
+  --color-atom-o: #b83227;
+  --color-atom-f: #0e8588;
+
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-sh1: 0 1px 2px rgba(11, 31, 58, 0.05);
+  --shadow-sh2: 0 1px 2px rgba(11, 31, 58, 0.04), 0 10px 28px rgba(11, 31, 58, 0.06);
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skel {
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--color-line-2), #f6f8fb, var(--color-line-2));
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none !important;
+  }
 }
