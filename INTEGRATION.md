@@ -27,11 +27,37 @@ app.include_router(molecular_router)
 That's the entire integration surface. The molecular router:
 - Does not import or touch Supabase, your database connections, or any
   other router's state.
-- Reads its own artifacts from `backend/models/` (produced by
-  `backend/ml/train_cyp2d6_model.py` and `backend/ml/build_reference_index.py`).
+- Reads its own artifacts from `backend/models/` at your repo root — not
+  under `app/` — produced by running, from your repo root with your venv
+  active: `python ml/train_cyp2d6_model.py` then `python
+  ml/build_reference_index.py` (copy `backend/ml/` over too; it's not part
+  of the router but it's what generates the artifacts the router reads). If
+  the artifacts aren't there yet, the router degrades gracefully —
+  `GET /api/molecular/model-info` returns `trained: false`, `analyze` still
+  validates/canonicalises/draws structures, just without a classifier
+  prediction or similarity neighbours — rather than erroring.
+- Needs these Python packages installed: `fastapi`, `rdkit`, `scikit-learn`,
+  `scikit-fingerprints`, `pandas`, `numpy`, `joblib`, `pydantic`. See
+  `backend/requirements.txt` for exact pinned versions (not enumerated here
+  so this document doesn't drift from it).
 - Only needs CORS to allow the local frontend dev origin
-  (`http://localhost:5173`) — merge that into your existing `CORSMiddleware`
-  config if you already have one, rather than adding a second middleware.
+  (`http://localhost:5173`, or any `localhost`/`127.0.0.1` port — see
+  `backend/app/main.py`'s `allow_origin_regex`) — merge that into your
+  existing `CORSMiddleware` config if you already have one, rather than
+  adding a second middleware. CORS is app-level, so your own policy governs
+  the merged router too; there's no collision to worry about, just make
+  sure your policy actually allows the frontend's origin.
+
+**`GET /health` does NOT travel with this merge** — it's defined directly
+in the scaffold's `backend/app/main.py`, not inside `routers/molecular.py`,
+specifically so it stays a general app-level health check rather than
+something Stream 1-specific. If you copy `backend/tests/` wholesale,
+`test_api.py::test_health` will fail against your own `main.py` unless it
+also exposes `GET /health` (which it almost certainly already does, or
+should, independent of this merge). Verified by actually doing this merge
+into a standalone throwaway FastAPI app in this session: 26 of 27 copied
+tests passed unmodified against the fresh app; `test_health` was the only
+failure, for exactly this reason.
 
 If `backend/app/main.py` already exists with different content by the time
 this merges, **do not overwrite it** — apply only the two additions above as
@@ -40,6 +66,8 @@ a patch.
 ## 2. Stream 1 API contract (implemented, live)
 
 ### `GET /health`
+Scaffold-only — defined in `backend/app/main.py`, not in the molecular
+router. Does not travel with the §1 merge; see the note there.
 ```json
 { "status": "ok" }
 ```
