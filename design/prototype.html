@@ -1,0 +1,1036 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>GeneCollision</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: navy rail + light workspace. Review = inputs left, assessment right. Explorer = same grid, dashed indigo for anything experimental. */
+:root{
+  --navy-950:#071427; --navy-900:#0B1F3A; --navy-800:#12294A; --navy-700:#1D3B66; --navy-300:#9FB3CC; --navy-200:#C4D2E3;
+  --ink:#0B1F3A; --ink-2:#34485F; --ink-3:#5C6E85;
+  --bg:#F2F5F9; --surface:#FFFFFF; --surface-2:#F7F9FC; --line:#DCE4EE; --line-2:#E9EEF4;
+  --teal-900:#0A4F52; --teal-700:#0B6F72; --teal-600:#0E8588; --teal-500:#13A1A3; --teal-300:#5FD3D0; --teal-100:#CFEDEC; --teal-50:#EAF6F6;
+  --amber-800:#7A4306; --amber-600:#B45F06; --amber-200:#EFD39A; --amber-100:#FBEBC6; --amber-50:#FFF7E6;
+  --exp-800:#3F3590; --exp-600:#5B4DBB; --exp-300:#B7AEE6; --exp-200:#D5CFF1; --exp-50:#F4F2FD;
+  --crit-700:#A61E14; --crit-200:#F5C2BD; --crit-50:#FEF2F1;
+  --slate-100:#E9EEF7; --slate-200:#DDE5F0; --slate-300:#C9D4E3;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --sh-1:0 1px 2px rgba(11,31,58,.05); --sh-2:0 1px 2px rgba(11,31,58,.04),0 10px 28px rgba(11,31,58,.06);
+  --f-display:'Manrope',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --atom-n:#2F4FBF; --atom-o:#B83227; --atom-f:#0E8588;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+a{color:var(--teal-700)}
+:focus-visible{outline:2px solid var(--teal-500);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{flex:none;display:inline-block;vertical-align:middle}
+.spin{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}.skel{animation:none!important}}
+.mono{font-family:var(--f-mono)}
+.eyebrow{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.fine{font-size:12.5px;color:var(--ink-3)}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;background:var(--navy-900);color:var(--navy-200);display:flex;flex-direction:column;gap:26px;padding:20px 16px 16px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px;color:#fff}
+.brand-name{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:-.015em}
+.brand-name b{color:var(--teal-300);font-weight:800}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:var(--navy-200);text-align:left;font-weight:500}
+.nav-i:hover:not(:disabled){background:rgba(255,255,255,.06);color:#fff}
+.nav-i[aria-current=page]{background:rgba(19,161,163,.18);color:#fff;box-shadow:inset 0 0 0 1px rgba(95,211,208,.3)}
+.nav-i:disabled{opacity:.6;cursor:not-allowed}
+.nav-tag{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.tag-exp{background:rgba(183,174,230,.16);color:var(--exp-200);border:1px dashed rgba(183,174,230,.65)}
+.tag-soon{background:rgba(255,255,255,.08);color:var(--navy-300)}
+.key{margin-top:auto;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;font-size:12px;color:var(--navy-300);display:flex;flex-direction:column;gap:12px}
+.key h4{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-200)}
+.key-r{display:flex;gap:10px;align-items:flex-start}
+.sw{flex:none;width:16px;height:16px;border-radius:5px;margin-top:2px}
+.sw-clin{background:var(--teal-500)}
+.sw-exp{border:1.5px dashed var(--exp-300);background:rgba(183,174,230,.16)}
+.key-r b{display:block;color:#fff;font-weight:600}
+.main{min-width:0}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;padding:10px max(24px,env(safe-area-inset-right,0px)) 10px max(24px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.crumbs{display:flex;align-items:center;gap:8px;color:var(--ink-3);font-size:13px;min-width:0}
+.crumbs b{color:var(--ink);font-weight:600}
+.tb-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--navy-900);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:12px}
+.content{max-width:1380px;margin:0 auto;padding:24px max(24px,env(safe-area-inset-right,0px)) 40px max(24px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:20px}
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-t{font-family:var(--f-display);font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1.15}
+.page-sub{color:var(--ink-2);margin-top:4px;max-width:62ch}
+.foot{font-size:12px;color:var(--ink-3);display:flex;gap:8px;align-items:flex-start;padding-top:4px}
+
+/* ---------- primitives ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500;line-height:1.4;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.chip-teal{background:var(--teal-50);border-color:var(--teal-100);color:var(--teal-700)}
+.chip-amber{background:var(--amber-50);border-color:var(--amber-200);color:var(--amber-800)}
+.chip-navy{background:var(--slate-100);border-color:var(--slate-200);color:var(--navy-700)}
+.chip-exp{background:var(--exp-50);border:1px dashed var(--exp-300);color:var(--exp-800)}
+.chip-miss{background:transparent;border:1px dashed #AEBBCD;color:var(--ink-3)}
+.chip-crit{background:var(--crit-50);border-color:var(--crit-200);color:var(--crit-700)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;line-height:1.2}
+.btn:hover:not(:disabled){border-color:#B9C7D8;background:var(--surface-2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--navy-900);border-color:var(--navy-900);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--navy-800);border-color:var(--navy-800)}
+.btn-exp{background:var(--exp-600);border-color:var(--exp-600);color:#fff}
+.btn-exp:hover:not(:disabled){background:var(--exp-800);border-color:var(--exp-800)}
+.btn-sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn-block{width:100%;padding:13px 16px;font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1);min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.card-t{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:-.005em}
+.card-s{font-size:12.5px;color:var(--ink-3)}
+.card-b{padding:16px}
+.grow{flex:1;min-width:0}
+.step{flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--navy-900);color:#fff;font-size:12px;font-weight:700;font-family:var(--f-display)}
+.step-exp{background:var(--exp-600)}
+.banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13.5px;flex-wrap:wrap}
+.banner-amber{background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-800)}
+.banner-slate{background:var(--slate-100);border:1px solid var(--slate-200);color:var(--navy-700)}
+.ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ul li{display:flex;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.ul .ic{margin-top:3px;color:var(--ink-3)}
+
+/* ---------- scenarios ---------- */
+.scen{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.scen-l{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-right:2px}
+.scen-b{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:13px;font-weight:500}
+.scen-b:hover{border-color:#B9C7D8;background:var(--surface-2)}
+.scen-b[aria-pressed=true]{border-color:var(--navy-900);box-shadow:inset 0 0 0 1px var(--navy-900)}
+
+/* ---------- review layout ---------- */
+.review{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);gap:20px;align-items:start}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.pts{display:flex;flex-direction:column;gap:8px;padding:12px}
+.pt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.pt:hover{border-color:#B9C7D8}
+.pt[aria-checked=true]{border-color:var(--teal-600);background:var(--teal-50);box-shadow:inset 0 0 0 1px var(--teal-600)}
+.pt-av{flex:none;width:34px;height:34px;border-radius:50%;background:var(--slate-100);color:var(--navy-700);display:grid;place-items:center;font-family:var(--f-display);font-weight:800}
+.pt[aria-checked=true] .pt-av{background:var(--teal-600);color:#fff}
+.pt-n{font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pt-n small{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);font-weight:400}
+.pt-s{font-size:12.5px;color:var(--ink-3)}
+.gene-hero{padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);display:flex;flex-direction:column;gap:12px;margin:12px 12px 0}
+.gh-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.gh-g{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.gh-d{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.dip{font-family:var(--f-mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
+.act{display:flex;flex-direction:column;gap:6px}
+.act-track{position:relative;display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--slate-200)}
+.act-z{height:100%}
+.az-im{width:41.67%;background:var(--amber-100)}
+.az-nm{width:33.33%;background:var(--teal-100)}
+.az-um{width:25%;background:var(--slate-200)}
+.act-wrap{position:relative}
+.act-mark{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--navy-900);transform:translateX(-2px);box-shadow:0 0 0 2px var(--surface-2)}
+.act-lbl{display:flex;font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--ink-3)}
+.act-lbl span{text-align:center}
+.genes{padding:8px 12px 4px;display:flex;flex-direction:column}
+.gene-row{display:grid;grid-template-columns:72px 64px minmax(0,1fr);align-items:center;gap:8px;padding:10px 4px;border-top:1px solid var(--line-2)}
+.gene-row:first-child{border-top:0}
+.gene-row b{font-family:var(--f-display);font-weight:700}
+.gene-row .mono{font-size:13px}
+.flagbox{margin:12px 12px 0;display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-800);font-size:13px}
+.card-f{padding:10px 16px 14px}
+.combo{position:relative;padding:12px 12px 0}
+.search{display:flex;align-items:center;gap:8px;padding:0 12px;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-3)}
+.search:focus-within{border-color:var(--teal-600);box-shadow:0 0 0 3px rgba(19,161,163,.18)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink)}
+.menu{position:absolute;left:12px;right:12px;top:calc(100% + 4px);z-index:8;list-style:none;margin:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-2);max-height:300px;overflow:auto}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.opt.hi{background:var(--teal-50)}
+.opt strong{display:block;font-weight:600}
+.opt span{display:block;font-size:12px;color:var(--ink-3)}
+.opt em{font-style:normal;font-size:11.5px;color:var(--ink-2);background:var(--slate-100);padding:2px 8px;border-radius:999px;text-align:right}
+.opt.none{cursor:default;color:var(--ink-3)}
+.meds{display:flex;flex-direction:column;gap:8px;padding:12px}
+.med{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.med .ic.pill{color:var(--teal-700)}
+.med-n{font-weight:600}
+.med-s{font-size:12px;color:var(--ink-3)}
+.x{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:var(--ink-3)}
+.x:hover{background:var(--slate-100);color:var(--ink)}
+.runbar{position:sticky;bottom:16px;display:flex;flex-direction:column;gap:8px;padding:12px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-2);backdrop-filter:blur(6px)}
+
+/* ---------- results ---------- */
+.results{display:flex;flex-direction:column;gap:16px}
+.is-stale .verdict,.is-stale .stale-fade{opacity:.55}
+.verdict{border-radius:var(--r-lg);border:1px solid;padding:22px;display:flex;flex-direction:column;gap:18px}
+.v-found{background:var(--amber-50);border-color:var(--amber-200)}
+.v-none{background:#EEF2F7;border-color:var(--slate-300)}
+.v-amb{background:var(--surface);border:1.5px dashed #9FB0C6}
+.v-top{display:flex;gap:16px;align-items:flex-start}
+.v-ic{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center}
+.v-found .v-ic{background:var(--amber-100);color:var(--amber-800)}
+.v-none .v-ic,.v-amb .v-ic{background:var(--slate-200);color:var(--navy-700)}
+.v-title{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1.12;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
+.v-sum{max-width:64ch;font-size:15px;color:var(--ink-2)}
+.notsafe{display:flex;gap:10px;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--slate-300);font-size:13.5px}
+.notsafe .ic{color:var(--navy-700);margin-top:2px}
+.v-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 20px;margin:0;padding-top:16px;border-top:1px solid rgba(11,31,58,.1)}
+.v-meta dt{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.v-meta dd{margin:2px 0 0;font-weight:500;overflow-wrap:anywhere}
+.v-meta dd small{display:block;font-weight:400;color:var(--ink-3);font-size:12px}
+.flow{display:flex;align-items:stretch;gap:0}
+.fnode{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.fnode .eyebrow{font-size:10.5px}
+.fn-t{font-weight:600;line-height:1.3}
+.fn-s{font-size:12.5px;color:var(--ink-3)}
+.fk-gene{background:var(--teal-50);border-color:var(--teal-100)}
+.fk-inhib{background:var(--slate-100);border-color:var(--slate-200)}
+.fk-effect{background:var(--amber-50);border-color:var(--amber-200)}
+.fk-unk{background:var(--surface);border:1.5px dashed #9FB0C6}
+.fk-miss{background:repeating-linear-gradient(135deg,var(--surface),var(--surface) 6px,var(--surface-2) 6px,var(--surface-2) 12px);border:1.5px dashed #9FB0C6}
+.fconn{flex:none;display:grid;place-items:center;width:26px;color:var(--ink-3)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.checks li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line-2)}
+.checks li:first-child{border-top:0}
+.checks .ic{color:var(--ink-3)}
+.checks strong{display:block;font-weight:600}
+.checks span.n{display:block;font-size:12.5px;color:var(--ink-3)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.ev{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line-2)}
+.ev:first-child{border-top:0;padding-top:0}
+.ev-src{flex:none;align-self:flex-start;padding:3px 8px;border-radius:7px;background:var(--navy-900);color:#fff;font-size:11px;font-weight:600;letter-spacing:.04em}
+.ev-t{font-weight:600;line-height:1.35}
+.ev-c{font-size:12.5px;color:var(--ink-3)}
+.ev a{display:inline-flex;gap:4px;align-items:center;font-size:12.5px;margin-top:2px}
+.sub-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
+.sub-h + .ul + .sub-h{margin-top:18px}
+.ul + .sub-h{margin-top:18px}
+
+/* idle / loading / error */
+.outs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.out{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.out h3{font-family:var(--f-display);font-size:15px;font-weight:700;line-height:1.3}
+.out p{font-size:13px;color:var(--ink-2)}
+.out-ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center}
+.o-found{background:var(--amber-50);border-color:var(--amber-200)}
+.o-found .out-ic{background:var(--amber-100);color:var(--amber-800)}
+.o-none .out-ic,.o-amb .out-ic{background:var(--slate-200);color:var(--navy-700)}
+.o-amb{border:1.5px dashed #9FB0C6}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.steps li{display:flex;align-items:center;gap:10px;color:var(--ink-3)}
+.steps li.on{color:var(--ink);font-weight:500}
+.steps li.done{color:var(--ink-2)}
+.steps .ic.ok{color:var(--teal-600)}
+.skel{border-radius:10px;background:linear-gradient(90deg,var(--line-2),#F6F8FB,var(--line-2));background-size:200% 100%;animation:sh 1.5s linear infinite}
+.err{display:flex;gap:16px;padding:22px;border-radius:var(--r-lg);background:var(--crit-50);border:1px solid var(--crit-200)}
+.err h2{font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:-.01em;color:var(--crit-700)}
+.err p{color:var(--ink-2);margin-top:6px;max-width:60ch}
+
+/* cross-link + PK */
+.xlink{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed var(--exp-300);background:var(--exp-50);border-radius:var(--r-md);flex-wrap:wrap}
+.xlink .ic{color:var(--exp-600)}
+.xlink b{display:block;color:var(--exp-800)}
+.xlink span{font-size:13px;color:var(--ink-2)}
+.pk{border:1.5px dashed var(--slate-300);border-radius:var(--r-md);background:var(--surface)}
+.pk svg{display:block;width:100%;height:auto}
+.pk-code{font-family:var(--f-mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;color:var(--ink-2);overflow-x:auto;white-space:pre}
+
+/* ---------- explorer ---------- */
+.exp-banner{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1.5px dashed var(--exp-300);background:var(--exp-50);border-radius:var(--r-md);color:var(--exp-800);flex-wrap:wrap}
+.exp-banner .grow{min-width:260px}
+.exp-banner b{display:block;font-family:var(--f-display);font-weight:800;font-size:15px}
+.exp-banner p{font-size:13.5px;color:var(--ink-2);margin-top:2px;max-width:70ch}
+.exp-chips{display:flex;gap:6px;flex-wrap:wrap}
+.xgrid{display:grid;grid-template-columns:minmax(310px,380px) minmax(0,1fr);gap:20px;align-items:start}
+.ta{display:block;width:100%;min-height:92px;resize:vertical;padding:12px;border:1px solid var(--line);border-radius:10px;font-family:var(--f-mono);font-size:13px;line-height:1.55;background:var(--surface-2);color:var(--ink);overflow-wrap:anywhere}
+.ta:focus{outline:0;border-color:var(--exp-600);box-shadow:0 0 0 3px rgba(91,77,187,.16);background:var(--surface)}
+.ta.bad{border-color:var(--crit-700);background:var(--crit-50)}
+.presets{display:flex;gap:6px;flex-wrap:wrap}
+.preset{padding:4px 10px;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:12.5px;font-weight:500}
+.preset:hover{border-color:var(--exp-300);background:var(--exp-50)}
+.field-err{display:flex;gap:8px;color:var(--crit-700);font-size:13px}
+.struct{height:210px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);display:grid;place-items:center;padding:6px}
+.struct svg{width:100%;height:100%}
+.ph{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:var(--ink-3);font-size:12.5px;padding:12px}
+.props{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;margin:0;font-size:13px}
+.props dt{color:var(--ink-3)}
+.props dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.props dd.mono{font-weight:400;font-size:12px}
+.secA .card-h{background:var(--surface)}
+.nb{list-style:none;margin:0;padding:4px 16px 8px}
+.nb li{display:grid;grid-template-columns:22px 84px minmax(0,1fr) minmax(120px,170px);align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line-2)}
+.nb li:first-child{border-top:0}
+.nb-rank{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.nb-th{height:62px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);padding:2px}
+.nb-th svg{width:100%;height:100%;display:block}
+.nb-n{font-weight:600}
+.nb-r{font-size:12.5px;color:var(--ink-3)}
+.nb-sm{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{display:flex;flex-direction:column;gap:6px}
+.sc-n{font-family:var(--f-mono);font-size:18px;font-weight:500;text-align:right;letter-spacing:-.02em}
+.bar{height:8px;border-radius:999px;background:var(--slate-200);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--navy-700);border-radius:999px}
+.empty-nb{display:flex;gap:12px;padding:20px 16px;color:var(--ink-2)}
+.exp-card{border:1.5px dashed var(--exp-300);border-radius:var(--r-md);background:var(--surface);overflow:hidden;min-width:0}
+.hatch{height:6px;background:repeating-linear-gradient(135deg,var(--exp-300) 0 6px,var(--exp-50) 6px 12px)}
+.exp-card .card-h{background:var(--exp-50);border-bottom:1px dashed var(--exp-300)}
+.exp-card .card-t{color:var(--exp-800)}
+.mlgrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0}
+.mlgrid > div{padding:18px}
+.mlgrid > div + div{border-left:1px dashed var(--exp-300)}
+.pred{display:flex;flex-direction:column;gap:14px}
+.pred-h{font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1.2;letter-spacing:-.015em;color:var(--ink);text-wrap:balance}
+.pred-n{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pred-n b{font-family:var(--f-mono);font-weight:500;font-size:34px;letter-spacing:-.03em;color:var(--exp-800)}
+.meter{position:relative;height:10px;border-radius:999px;background:var(--exp-200);margin-top:6px}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--exp-600)}
+.meter u{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink);text-decoration:none}
+.m-lbl{position:relative;height:16px;font-size:11px;color:var(--ink-3);font-family:var(--f-mono)}
+.m-lbl span{position:absolute;transform:translateX(-50%)}
+.m-lbl span:first-child{transform:none}
+.m-lbl span:last-child{transform:translateX(-100%)}
+.mdl h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--f-display);font-size:14px;font-weight:700;margin-bottom:12px}
+.mets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.met{padding:10px 12px;border:1px solid var(--exp-200);border-radius:10px;background:var(--exp-50)}
+.met small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.met b{font-family:var(--f-mono);font-weight:500;font-size:20px;color:var(--exp-800)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin:0;font-size:12.5px}
+.kv dt{color:var(--ink-3)}
+.kv dd{margin:0;font-weight:500}
+.iso{display:flex;gap:10px;align-items:center;padding:12px 18px;border-top:1px dashed var(--exp-300);background:var(--exp-50);color:var(--exp-800);font-size:13px}
+.lims{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 22px;padding:16px}
+.lim{display:flex;gap:10px;font-size:13px;color:var(--ink-2)}
+.lim .ic{margin-top:2px;color:var(--ink-3)}
+.lim b{display:block;color:var(--ink)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1100px){
+  .app{grid-template-columns:72px minmax(0,1fr)}
+  .side{padding:16px 10px 16px max(10px,env(safe-area-inset-left,0px));align-items:center}
+  .brand-name,.lbl,.nav-tag,.key{display:none}
+  .nav-i{justify-content:center;padding:12px}
+  .review{grid-template-columns:minmax(300px,360px) minmax(0,1fr)}
+  .flow{flex-direction:column}
+  .fconn{width:auto;height:26px;transform:rotate(90deg)}
+  .mlgrid{grid-template-columns:1fr}
+  .mlgrid > div + div{border-left:0;border-top:1px dashed var(--exp-300)}
+}
+@media (max-width:900px){
+  .review,.xgrid,.two{grid-template-columns:minmax(0,1fr)}
+  .outs{grid-template-columns:minmax(0,1fr)}
+  .runbar{bottom:8px}
+  .lims{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:720px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;gap:8px;padding:10px 16px 10px max(16px,env(safe-area-inset-left,0px));overflow-x:auto}
+  .nav{flex-direction:row}
+  .nav-i{width:auto;padding:8px 10px;white-space:nowrap}
+  .lbl{display:inline}
+  .brand{padding:0}
+  .topbar{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .page-t{font-size:22px}
+  .v-title{font-size:24px}
+  .v-top{flex-direction:column}
+  .nb li{grid-template-columns:70px minmax(0,1fr);gap:10px}
+  .nb-rank{display:none}
+  .nb li .sc{grid-column:1 / -1}
+  .tb-right .chip.hide-sm{display:none}
+  .gene-row{grid-template-columns:64px 56px minmax(0,1fr)}
+}
+</style>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function(){
+const { useState, useEffect, useMemo, useRef } = React;
+const html = htm.bind(React.createElement);
+const F = React.Fragment;
+const cx = (...a) => a.filter(Boolean).join(' ');
+
+/* ============ icons (Lucide-style, 24px grid, 2px stroke) ============ */
+const ICONS = {
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  triangle:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  dna:'<path d="m10 16 1.5 1.5"/><path d="m14 8-1.5-1.5"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m16.5 10.5 1 1"/><path d="m17 6-2.891-2.891"/><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="m20 9 .891.891"/><path d="M3.109 14.109 4 15"/><path d="m6.5 12.5 1 1"/><path d="m7 18 2.891 2.891"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/>',
+  flask:'<path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/>',
+  activity:'<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  chevron:'<path d="m9 18 6-6-6-6"/>',
+  arrow:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+  loader:'<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+  retry:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  link:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  book:'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  cpu:'<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/>',
+  ban:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+  zap:'<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  chart:'<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>',
+  database:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+  hex:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>',
+  minus:'<path d="M5 12h14"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'
+};
+function Icon({name,size=16,className='',spin}){
+  return html`<svg className=${cx('ic',name==='pill'&&'pill',className,spin&&'spin')} width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" dangerouslySetInnerHTML=${{__html:ICONS[name]||''}}></svg>`;
+}
+function Logo({size=30}){
+  return html`<svg width=${size} height=${size} viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="12" cy="16" r="9" stroke="#5FD3D0" strokeWidth="2.4"/><circle cx="20" cy="16" r="9" stroke="#FFFFFF" strokeWidth="2.4"/><path d="M16 7.94A9 9 0 0 1 16 24.06A9 9 0 0 1 16 7.94Z" fill="#5FD3D0" fillOpacity=".4"/></svg>`;
+}
+
+/* ============ synthetic clinical data ============ */
+const PATIENTS = [
+  {id:'SYN-1042',initial:'A',name:'Synthetic Patient A',age:58,sex:'F',context:'Adjuvant breast cancer therapy',defaultMeds:['paroxetine','tamoxifen'],
+   genes:[
+    {gene:'CYP2D6',diplotype:'*1/*4',phenotype:'Intermediate metabolizer',code:'IM',score:1.0},
+    {gene:'CYP2C19',diplotype:'*1/*2',phenotype:'Intermediate metabolizer',code:'IM'},
+    {gene:'CYP2C9',diplotype:'*1/*1',phenotype:'Normal metabolizer',code:'NM'},
+    {gene:'CYP3A5',diplotype:'*3/*3',phenotype:'Non-expresser',code:'NE'}]},
+  {id:'SYN-2217',initial:'B',name:'Synthetic Patient B',age:44,sex:'M',context:'Atrial fibrillation',defaultMeds:['metoprolol','warfarin'],
+   genes:[
+    {gene:'CYP2D6',diplotype:'*1/*2',phenotype:'Normal metabolizer',code:'NM',score:2.0},
+    {gene:'CYP2C19',diplotype:'*1/*1',phenotype:'Normal metabolizer',code:'NM'},
+    {gene:'CYP2C9',diplotype:'*1/*1',phenotype:'Normal metabolizer',code:'NM'},
+    {gene:'CYP3A5',diplotype:'*3/*3',phenotype:'Non-expresser',code:'NE'}]},
+  {id:'SYN-3090',initial:'C',name:'Synthetic Patient C',age:67,sex:'F',context:'Recent coronary stent, reflux',defaultMeds:['clopidogrel','omeprazole'],
+   genes:[
+    {gene:'CYP2D6',diplotype:'*1/*1',phenotype:'Normal metabolizer',code:'NM',score:2.0},
+    {gene:'CYP2C19',missing:true},
+    {gene:'CYP2C9',diplotype:'*1/*3',phenotype:'Intermediate metabolizer',code:'IM'},
+    {gene:'CYP3A5',missing:true}]}
+];
+const DRUGS = [
+  {id:'tamoxifen',name:'Tamoxifen',cls:'Antineoplastic, SERM',tag:'CYP2D6 prodrug',genes:['CYP2D6']},
+  {id:'paroxetine',name:'Paroxetine',cls:'SSRI antidepressant',tag:'Strong CYP2D6 inhibitor',genes:['CYP2D6']},
+  {id:'fluoxetine',name:'Fluoxetine',cls:'SSRI antidepressant',tag:'Strong CYP2D6 inhibitor',genes:['CYP2D6']},
+  {id:'sertraline',name:'Sertraline',cls:'SSRI antidepressant',tag:'Dose-dependent CYP2D6 inhibition',genes:['CYP2D6']},
+  {id:'codeine',name:'Codeine',cls:'Opioid analgesic',tag:'CYP2D6 prodrug',genes:['CYP2D6']},
+  {id:'tramadol',name:'Tramadol',cls:'Opioid analgesic',tag:'CYP2D6 prodrug',genes:['CYP2D6']},
+  {id:'metoprolol',name:'Metoprolol',cls:'Beta blocker',tag:'CYP2D6 substrate',genes:['CYP2D6']},
+  {id:'atomoxetine',name:'Atomoxetine',cls:'Norepinephrine reuptake inhibitor',tag:'CYP2D6 substrate',genes:['CYP2D6']},
+  {id:'amitriptyline',name:'Amitriptyline',cls:'Tricyclic antidepressant',tag:'CYP2D6 and CYP2C19 substrate',genes:['CYP2D6','CYP2C19']},
+  {id:'clopidogrel',name:'Clopidogrel',cls:'Antiplatelet',tag:'CYP2C19 prodrug',genes:['CYP2C19']},
+  {id:'omeprazole',name:'Omeprazole',cls:'Proton pump inhibitor',tag:'CYP2C19 substrate and inhibitor',genes:['CYP2C19']},
+  {id:'citalopram',name:'Citalopram',cls:'SSRI antidepressant',tag:'CYP2C19 substrate',genes:['CYP2C19']},
+  {id:'warfarin',name:'Warfarin',cls:'Anticoagulant',tag:'CYP2C9 substrate',genes:['CYP2C9']}
+];
+const drugOf = id => DRUGS.find(d=>d.id===id);
+const EV = {
+  cpicTam:{src:'CPIC',title:'Guideline for CYP2D6 and tamoxifen therapy',cite:'Goetz et al., Clin Pharmacol Ther, 2018',kind:'Clinical guideline',url:'https://cpicpgx.org/guidelines/'},
+  cpicOpi:{src:'CPIC',title:'Guideline for CYP2D6, OPRM1 and COMT genotypes and select opioid therapy',cite:'Crews et al., Clin Pharmacol Ther, 2021',kind:'Clinical guideline',url:'https://cpicpgx.org/guidelines/'},
+  cpicClo:{src:'CPIC',title:'Guideline for CYP2C19 and clopidogrel therapy, 2022 update',cite:'Lee et al., Clin Pharmacol Ther, 2022',kind:'Clinical guideline',url:'https://cpicpgx.org/guidelines/'},
+  fda:{src:'FDA',title:'Table of substrates, inhibitors and inducers (drug development and drug interactions)',cite:'U.S. Food and Drug Administration',kind:'Regulatory reference',url:'https://www.fda.gov/drugs/drug-interactions-labeling/drug-development-and-drug-interactions-table-substrates-inhibitors-and-inducers'},
+  fdaClo:{src:'FDA',title:'Clopidogrel prescribing information, section on concomitant CYP2C19 inhibitors',cite:'U.S. Food and Drug Administration',kind:'Product labelling',url:'https://www.fda.gov/drugs'},
+  pgkb:{src:'PharmGKB',title:'Curated gene–drug annotations for the drugs on this list',cite:'PharmGKB',kind:'Curated database',url:'https://www.pharmgkb.org/'}
+};
+const lc = s => s.charAt(0).toLowerCase()+s.slice(1);
+const geneState = (patient,g) => {const x=patient.genes.find(y=>y.gene===g);return x&&!x.missing?x:null};
+
+function buildChecks(patient, ids){
+  const out=[];
+  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
+    const a=drugOf(ids[i]),b=drugOf(ids[j]);
+    const genes=[...new Set([...a.genes,...b.genes])];
+    const miss=genes.filter(g=>!geneState(patient,g));
+    const note=genes.map(g=>{const s=geneState(patient,g);return s?g+' '+s.code:g+' not tested'}).join('  ·  ');
+    out.push({label:a.name+' × '+b.name,note,missing:miss.length>0});
+  }
+  return out;
+}
+
+/* Deterministic stand-in for the backend rules engine */
+function evaluate(patient, ids){
+  const has=id=>ids.includes(id);
+  const meta={engine:'Rules engine v0.3',snapshot:'2026-10-20',medIds:ids};
+  const inhId=['paroxetine','fluoxetine'].find(has);
+  const inh=inhId&&drugOf(inhId);
+  const d6=geneState(patient,'CYP2D6');
+  const c19=geneState(patient,'CYP2C19');
+  const geneNode=(g,s)=>({k:'gene',label:'Patient genotype',title:g.gene+' '+g.diplotype,sub:g.phenotype+(g.score!==undefined?' · activity score '+g.score.toFixed(1):'')});
+
+  if(has('tamoxifen')&&inh&&d6){
+    return {...meta,status:'found',ruleId:'GDD-2D6-TAM-01',title:'Association found',
+      summary:inh.name+' is a strong CYP2D6 inhibitor, and tamoxifen needs CYP2D6 to form its active metabolite, endoxifen. With '+lc(d6.phenotype)+' CYP2D6 status, this combination is documented to lower endoxifen formation.',
+      basis:'Guideline-supported',basisSub:'CPIC level A gene–drug pair, FDA inhibitor listing',
+      nodes:[geneNode(d6),{k:'inhib',label:'Inhibitor on list',title:inh.name,sub:'Strong CYP2D6 inhibitor. Can move activity toward a poor-metabolizer-like state.'},{k:'sub',label:'Substrate',title:'Tamoxifen',sub:'Converted to endoxifen by CYP2D6.'},{k:'effect',label:'Documented effect',title:'Lower endoxifen exposure',sub:'Reduced formation of the active metabolite.'}],
+      evidence:[EV.cpicTam,EV.fda,EV.pgkb],
+      missing:['Doses and timing are not supplied. The rules do not use dose.','CYP2D6 copy number and structural variants are not in this synthetic profile.','Medications outside the supported list are not evaluated.'],
+      limits:['This flags a documented association. It does not estimate the size of the effect in this patient.','Rules cover curated gene–drug–drug entries only.','Clinical judgement and local guidance still apply.'],
+      flag:{gene:'CYP2D6',text:inh.name+' is on the list. Functional CYP2D6 activity may be lower than genotype alone suggests (phenoconversion).'}};
+  }
+  const opi=['codeine','tramadol'].find(has);
+  if(opi&&inh&&d6){
+    const o=drugOf(opi);
+    return {...meta,status:'found',ruleId:'GDD-2D6-OPI-01',title:'Association found',
+      summary:inh.name+' is a strong CYP2D6 inhibitor, and '+lc(o.name)+' relies on CYP2D6 to form its active opioid metabolite. With '+lc(d6.phenotype)+' CYP2D6 status, the combination is documented to reduce activation.',
+      basis:'Guideline-supported',basisSub:'CPIC opioid guideline, FDA inhibitor listing',
+      nodes:[geneNode(d6),{k:'inhib',label:'Inhibitor on list',title:inh.name,sub:'Strong CYP2D6 inhibitor.'},{k:'sub',label:'Substrate',title:o.name,sub:opi==='codeine'?'Converted to morphine by CYP2D6.':'Converted to O-desmethyltramadol by CYP2D6.'},{k:'effect',label:'Documented effect',title:'Reduced analgesic activation',sub:'Less active metabolite is formed.'}],
+      evidence:[EV.cpicOpi,EV.fda,EV.pgkb],
+      missing:['Doses and timing are not supplied.','CYP2D6 structural variants are not in this synthetic profile.'],
+      limits:['This flags a documented association. It does not estimate the size of the effect.','Clinical judgement and local guidance still apply.'],
+      flag:{gene:'CYP2D6',text:inh.name+' is on the list. Functional CYP2D6 activity may be lower than genotype alone suggests (phenoconversion).'}};
+  }
+  if(has('clopidogrel')&&has('omeprazole')){
+    if(!c19){
+      return {...meta,status:'ambiguous',ruleId:'GDD-2C19-CLO-01',title:'Ambiguous or insufficient evidence',
+        summary:'A drug–drug association between omeprazole and clopidogrel is documented, but this patient has no CYP2C19 result. The engine cannot assess how their genotype changes it.',
+        basis:'Incomplete input',basisSub:'Required genotype missing',
+        nodes:[{k:'miss',label:'Patient genotype',title:'CYP2C19: not tested',sub:'No result on file. The gene-dependent part of the rule cannot be evaluated.'},{k:'inhib',label:'Inhibitor on list',title:'Omeprazole',sub:'Inhibits CYP2C19.'},{k:'sub',label:'Substrate',title:'Clopidogrel',sub:'Prodrug activated by CYP2C19.'},{k:'unk',label:'Documented effect',title:'Cannot be graded',sub:'The size of the effect depends on the missing result.'}],
+        evidence:[EV.cpicClo,EV.fdaClo],
+        missing:['CYP2C19 genotype or phenotype is not available for this patient.','A CYP2C19 result would let the engine evaluate this rule.'],
+        limits:['This is not a finding of no association.','Do not read an unresolved result as reassurance.','Clinical judgement and local guidance still apply.']};
+    }
+    return {...meta,status:'found',ruleId:'GDD-2C19-CLO-01',title:'Association found',
+      summary:'Omeprazole inhibits CYP2C19, which clopidogrel needs for activation. With '+lc(c19.phenotype)+' CYP2C19 status, the combination is documented to reduce antiplatelet activation.',
+      basis:'Guideline-supported',basisSub:'CPIC level A gene–drug pair, FDA labelling',
+      nodes:[{k:'gene',label:'Patient genotype',title:'CYP2C19 '+c19.diplotype,sub:c19.phenotype},{k:'inhib',label:'Inhibitor on list',title:'Omeprazole',sub:'Inhibits CYP2C19.'},{k:'sub',label:'Substrate',title:'Clopidogrel',sub:'Prodrug activated by CYP2C19.'},{k:'effect',label:'Documented effect',title:'Reduced antiplatelet activation',sub:'Lower exposure to the active metabolite.'}],
+      evidence:[EV.cpicClo,EV.fdaClo,EV.pgkb],
+      missing:['Doses and timing are not supplied.'],
+      limits:['This flags a documented association. It does not estimate the size of the effect.','Clinical judgement and local guidance still apply.'],
+      flag:{gene:'CYP2C19',text:'Omeprazole is on the list. It inhibits CYP2C19, so functional activity may be lower than genotype alone suggests.'}};
+  }
+  const amb=['metoprolol','amitriptyline','atomoxetine'].find(has);
+  if(has('sertraline')&&amb&&d6){
+    return {...meta,status:'ambiguous',ruleId:'GDD-2D6-SER-01',title:'Ambiguous or insufficient evidence',
+      summary:'Sertraline inhibits CYP2D6 weakly to moderately, and the effect depends on dose. Published evidence is inconsistent, so the rule set does not assign a confident association.',
+      basis:'Conflicting evidence',basisSub:'Dose-dependent, no graded entry',
+      nodes:[geneNode(d6),{k:'inhib',label:'Possible inhibitor',title:'Sertraline',sub:'Weak to moderate, dose-dependent CYP2D6 inhibition.'},{k:'sub',label:'Substrate',title:drugOf(amb).name,sub:'Metabolised by CYP2D6.'},{k:'unk',label:'Documented effect',title:'Evidence conflicting',sub:'Reports differ on whether the effect is clinically meaningful.'}],
+      evidence:[EV.fda,{src:'Engine',title:'Curation note: conflicting or dose-dependent evidence, no graded association assigned',cite:'GeneCollision rule set v0.3 (synthetic)',kind:'Engine note'}],
+      missing:['Sertraline dose is not supplied and would change how this rule reads.'],
+      limits:['This is not a finding of no association.','Clinical judgement and local guidance still apply.']};
+  }
+  const checks=buildChecks(patient,ids);
+  const anyMissing=checks.some(c=>c.missing);
+  if(anyMissing){
+    return {...meta,status:'ambiguous',ruleId:'—',title:'Ambiguous or insufficient evidence',
+      summary:'No curated association matched, and at least one gene needed for these medications has no result for this patient. The engine cannot tell whether an association would apply.',
+      basis:'Incomplete input',basisSub:'Required genotype missing',checks,
+      evidence:[{src:'Rule set',title:'Curated gene–drug–drug entries searched',cite:'42 rules · snapshot 2026-10-20',kind:'Engine scope'}],
+      missing:['One or more genes relevant to these medications are not tested for this patient.'],
+      limits:['This is not a finding of no association.','Clinical judgement and local guidance still apply.']};
+  }
+  return {...meta,status:'none',ruleId:'—',title:'No documented association found',
+    summary:'No curated gene–drug–drug association matches this patient’s genotype and medication list in the supported rule set.',
+    basis:'Rule set searched',basisSub:'42 curated rules, snapshot 2026-10-20',checks,
+    evidence:[{src:'Rule set',title:'Curated gene–drug–drug entries searched',cite:'42 rules · snapshot 2026-10-20',kind:'Engine scope'},{src:'Sources',title:'CPIC, FDA table and PharmGKB entries queried. None matched this combination.',cite:'Evidence snapshot 2026-10-20',kind:'Sources searched'}],
+    missing:['Doses, timing, age, and kidney or liver function are not considered.','Genes outside CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are not supported.'],
+    limits:['Absence of a documented association is not evidence of safety.','The rule set is a curated subset of published evidence.','Clinical judgement and existing interaction checking still apply.']};
+}
+
+/* ============ molecules (prototype drawings; production returns RDKit SVG) ============ */
+function buildPEA(nMe,sub){
+  const atoms=[],bonds=[];
+  const add=(x,y,el,lab)=>{atoms.push({x,y,el:el||'C',lab});return atoms.length-1};
+  const bd=(a,b,o,c)=>bonds.push({a,b,o:o||1,c});
+  const ringAt=(cx,cy)=>{const P=[[0,-30],[26,-15],[26,15],[0,30],[-26,15],[-26,-15]];const ix=P.map(p=>add(cx+p[0],cy+p[1]));ix.forEach((v,i)=>bd(v,ix[(i+1)%6],i%2===0?2:1,[cx,cy]));return ix};
+  const n=add(26,75,'N',nMe?'NH':'NH₂');
+  if(nMe){const me=add(0,60);bd(me,n)}
+  const c1=add(52,60),c2=add(78,75),c3=add(104,60);
+  bd(n,c1);bd(c1,c2);bd(c2,c3);
+  const ra=ringAt(104,0);bd(c3,ra[3]);
+  const o=add(130,75,'O','O');bd(c3,o);
+  const rb=ringAt(182,75);bd(o,rb[5]);
+  if(sub==='cf3'){const c=add(234,105);bd(rb[2],c);[[260,90],[260,120],[234,135]].forEach(p=>{const f=add(p[0],p[1],'F','F');bd(c,f)})}
+  if(sub==='me'){const m=add(182,15);bd(rb[0],m)}
+  if(sub==='ome'){const oo=add(182,15,'O','O');bd(rb[0],oo);const m=add(208,0);bd(oo,m)}
+  return {atoms,bonds};
+}
+function buildMetformin(){
+  const atoms=[],bonds=[];
+  const add=(x,y,el,lab)=>{atoms.push({x,y,el:el||'C',lab});return atoms.length-1};
+  const bd=(a,b,o)=>bonds.push({a,b,o:o||1});
+  const n1=add(60,60,'N','N'),m1=add(34,45),m2=add(34,75);
+  const c2=add(86,45),i2=add(86,15,'N','NH'),n2=add(112,60,'N','NH');
+  const c3=add(138,45),i3=add(138,15,'N','NH'),n3=add(164,60,'N','NH₂');
+  bd(n1,m1);bd(n1,m2);bd(n1,c2);bd(c2,i2,2);bd(c2,n2);bd(n2,c3);bd(c3,i3,2);bd(c3,n3);
+  return {atoms,bonds};
+}
+const LIB = {
+  fluoxetine:{name:'Fluoxetine',role:'SSRI antidepressant',smiles:'CNCCC(c1ccccc1)Oc1ccc(cc1)C(F)(F)F',formula:'C17H18F3NO',mw:'309.33',mol:buildPEA(true,'cf3')},
+  norfluoxetine:{name:'Norfluoxetine',role:'Active metabolite of fluoxetine',smiles:'NCCC(c1ccccc1)Oc1ccc(cc1)C(F)(F)F',formula:'C16H16F3NO',mw:'295.30',mol:buildPEA(false,'cf3')},
+  atomoxetine:{name:'Atomoxetine',role:'Norepinephrine reuptake inhibitor',smiles:'CNCCC(c1ccccc1)Oc1ccccc1C',formula:'C17H21NO',mw:'255.35',mol:buildPEA(true,'me')},
+  nisoxetine:{name:'Nisoxetine',role:'Research NET inhibitor',smiles:'CNCCC(c1ccccc1)Oc1ccccc1OC',formula:'C17H21NO2',mw:'271.35',mol:buildPEA(true,'ome')},
+  desCF3:{name:'Des-CF3 fluoxetine analogue',role:'Reference analogue',smiles:'CNCCC(c1ccccc1)Oc1ccccc1',formula:'C16H19NO',mw:'241.33',mol:buildPEA(true,'none')},
+  metformin:{name:'Metformin',role:'Biguanide antidiabetic',smiles:'CN(C)C(=N)NC(=N)N',formula:'C4H11N5',mw:'129.16',mol:buildMetformin()}
+};
+/* illustrative placeholder scores for the prototype */
+const SIM = {
+  'fluoxetine|norfluoxetine':.82,'fluoxetine|desCF3':.66,'fluoxetine|atomoxetine':.61,'fluoxetine|nisoxetine':.55,
+  'norfluoxetine|desCF3':.62,'norfluoxetine|atomoxetine':.50,'norfluoxetine|nisoxetine':.45,
+  'atomoxetine|desCF3':.72,'atomoxetine|nisoxetine':.64,'nisoxetine|desCF3':.66
+};
+const simOf=(a,b)=>{if(a==='metformin'||b==='metformin')return .09;return SIM[a+'|'+b]??SIM[b+'|'+a]??.3};
+const PRED = {fluoxetine:{s:.91,n:.94},norfluoxetine:{s:.88,n:.93},atomoxetine:{s:.74,n:.86},nisoxetine:{s:.69,n:.81},desCF3:{s:.63,n:.78},metformin:{s:.06,n:.19}};
+const MODEL = {algo:'Random Forest (scikit-learn)',features:'Morgan fingerprint, radius 2, 2,048 bits',data:'TDC CYP2D6_Veith',split:'Scaffold split (TDC)',metrics:[['AUROC','0.89'],['AUPRC','0.86'],['Accuracy','0.82'],['MCC','0.64']]};
+
+function validateSmiles(s){
+  if(!s)return 'Enter a SMILES string to analyse.';
+  for(let i=0;i<s.length;i++){if(!/[A-Za-z0-9@+\-\[\]\(\)=#$:\/\\%.*]/.test(s[i]))return 'Unrecognised character "'+s[i]+'" at position '+(i+1)+'.'}
+  if(!/[A-Za-z]/.test(s))return 'No atoms found in this string.';
+  let d=0;for(const ch of s){if(ch==='(')d++;if(ch===')'){d--;if(d<0)return 'Unbalanced parentheses: a closing parenthesis has no opening partner.'}}
+  if(d>0)return 'Unbalanced parentheses: '+d+' opening parenthesis'+(d>1?'es are':' is')+' never closed.';
+  let b=0;for(const ch of s){if(ch==='[')b++;if(ch===']')b--}
+  if(b!==0)return 'Unbalanced square brackets in an atom specification.';
+  return null;
+}
+function explore(raw){
+  const s=raw.replace(/\s+/g,'');
+  const err=validateSmiles(s);
+  if(err)return {error:err};
+  const id=Object.keys(LIB).find(k=>LIB[k].smiles===s);
+  const q=id?LIB[id]:null;
+  const base=id||'fluoxetine';
+  const neighbours=Object.keys(LIB).filter(k=>k!==base&&k!=='metformin').map(k=>({id:k,...LIB[k],score:simOf(base,k)})).filter(n=>n.score>=.3).sort((a,b)=>b.score-a.score).slice(0,5);
+  const sampleOnly=!id;
+  const pr=id?PRED[id]:{s:.58,n:.41};
+  const dom=pr.n>=.5?'in':pr.n>=.3?'low':'out';
+  return {id,smiles:s,name:q?q.name:'Custom structure',formula:q?q.formula:'Computed by RDKit',mw:q?q.mw:'Computed by RDKit',neighbours:id==='metformin'?[]:neighbours,maxSim:id==='metformin'?.09:(neighbours[0]?neighbours[0].score:0),score:pr.s,nearest:pr.n,domain:dom,sampleOnly};
+}
+
+/* ============ structure renderer ============ */
+function Structure({mol,bg='#fff',label='Molecular structure'}){
+  const A=mol.atoms,pad=26;
+  const xs=A.map(a=>a.x),ys=A.map(a=>a.y);
+  const x0=Math.min(...xs)-pad,x1=Math.max(...xs)+pad,y0=Math.min(...ys)-pad,y1=Math.max(...ys)+pad;
+  const col={N:'var(--atom-n)',O:'var(--atom-o)',F:'var(--atom-f)'};
+  const bondEls=mol.bonds.map((b,i)=>{
+    const p=A[b.a],q=A[b.b],dx=q.x-p.x,dy=q.y-p.y,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,nx=-uy,ny=ux;
+    const ln=(x1_,y1_,x2_,y2_,k)=>html`<line key=${k} x1=${x1_} y1=${y1_} x2=${x2_} y2=${y2_}/>`;
+    if(b.o===2&&b.c){
+      const mx=(p.x+q.x)/2,my=(p.y+q.y)/2;let sx=b.c[0]-mx,sy=b.c[1]-my;const sl=Math.hypot(sx,sy);sx/=sl;sy/=sl;
+      const off=5,sh=5;
+      return html`<g key=${i}>${ln(p.x,p.y,q.x,q.y,'a')}${ln(p.x+ux*sh+sx*off,p.y+uy*sh+sy*off,q.x-ux*sh+sx*off,q.y-uy*sh+sy*off,'b')}</g>`;
+    }
+    if(b.o===2){const o=2.7;return html`<g key=${i}>${ln(p.x+nx*o,p.y+ny*o,q.x+nx*o,q.y+ny*o,'a')}${ln(p.x-nx*o,p.y-ny*o,q.x-nx*o,q.y-ny*o,'b')}</g>`}
+    return ln(p.x,p.y,q.x,q.y,i);
+  });
+  const labels=A.map((a,i)=>a.lab?html`<g key=${'l'+i}><rect x=${a.x-(a.lab.length*5.2+4)} y=${a.y-10} width=${a.lab.length*10.4+8} height="20" rx="6" fill=${bg}/><text x=${a.x} y=${a.y} textAnchor="middle" dominantBaseline="central" style=${{fill:col[a.el]||'var(--ink)',fontSize:'15px',fontWeight:600,fontFamily:'var(--f-body)'}}>${a.lab}</text></g>`:null);
+  return html`<svg viewBox=${x0+' '+y0+' '+(x1-x0)+' '+(y1-y0)} preserveAspectRatio="xMidYMid meet" role="img" aria-label=${label}><g style=${{stroke:'var(--ink)',strokeWidth:2,strokeLinecap:'round',fill:'none'}}>${bondEls}</g>${labels}</svg>`;
+}
+
+/* ============ shell ============ */
+function Sidebar({view,setView}){
+  const item=(id,icon,text,tag,tagCls,disabled)=>html`<button className="nav-i" title=${text} aria-current=${view===id?'page':undefined} disabled=${!!disabled} onClick=${()=>!disabled&&setView(id)}><${Icon} name=${icon} size=${18}/><span className="lbl">${text}</span>${tag&&html`<span className=${cx('nav-tag',tagCls)}>${tag}</span>`}</button>`;
+  return html`<aside className="side">
+    <div className="brand"><${Logo}/><span className="brand-name">Gene<b>Collision</b></span></div>
+    <nav className="nav" aria-label="Primary">
+      ${item('review','activity','Medication review')}
+      ${item('explorer','flask','Molecular explorer','Experimental','tag-exp')}
+      ${item('pk','chart','PK simulation','Soon','tag-soon',true)}
+    </nav>
+    <div className="key">
+      <h4>Evidence key</h4>
+      <div className="key-r"><span className="sw sw-clin"></span><span><b>Clinical assessment</b>Deterministic rules and cited evidence.</span></div>
+      <div className="key-r"><span className="sw sw-exp"></span><span><b>Experimental</b>Computational output. Not clinical evidence.</span></div>
+    </div>
+  </aside>`;
+}
+function Topbar({view}){
+  return html`<header className="topbar">
+    <div className="crumbs"><span>GeneCollision</span><${Icon} name="chevron" size=${14}/><b>${view==='review'?'Medication review':'Molecular explorer'}</b></div>
+    <div className="tb-right">
+      <span className="chip chip-teal hide-sm"><${Icon} name="shield" size=${13}/>Deterministic engine v0.3</span>
+      <span className="chip chip-amber"><${Icon} name="database" size=${13}/>Synthetic data</span>
+      <span className="avatar" title="Demo clinician">DC</span>
+    </div>
+  </header>`;
+}
+const Footer=()=>html`<div className="foot"><${Icon} name="info" size=${14}/><span>All patients, genotypes and outputs are synthetic demonstration data. GeneCollision is a hackathon prototype, not a medical device, and must not inform clinical decisions.</span></div>`;
+
+/* ============ medication review ============ */
+const phCls=c=>c==='NM'?'chip-teal':(c==='IM'||c==='PM')?'chip-amber':(c==='RM'||c==='UM')?'chip-navy':'chip';
+function PatientCard({pid,onPick}){
+  return html`<section className="card" aria-labelledby="h-pt">
+    <div className="card-h"><span className="step">1</span><h2 className="card-t" id="h-pt">Synthetic patient</h2></div>
+    <div className="pts" role="radiogroup" aria-labelledby="h-pt">
+      ${PATIENTS.map(p=>html`<button key=${p.id} role="radio" aria-checked=${p.id===pid} className="pt" onClick=${()=>onPick(p.id)}>
+        <span className="pt-av">${p.initial}</span>
+        <span className="grow"><span className="pt-n">${p.name}<small>${p.id}</small></span><span className="pt-s">${p.age} ${p.sex} · ${p.context}</span></span>
+      </button>`)}
+    </div>
+  </section>`;
+}
+function GeneticsCard({patient,flag}){
+  const d6=patient.genes.find(g=>g.gene==='CYP2D6');
+  const rest=patient.genes.filter(g=>g.gene!=='CYP2D6');
+  const showFlag=flag&&flag.gene;
+  return html`<section className="card" aria-labelledby="h-gen">
+    <div className="card-h"><span className="step">2</span><h2 className="card-t grow" id="h-gen">Pharmacogenetic profile</h2><span className="chip"><${Icon} name="dna" size=${13}/>Synthetic</span></div>
+    <div className="gene-hero">
+      <div className="gh-top"><span className="gh-g">CYP2D6</span><span className=${cx('chip',phCls(d6.code))}>${d6.phenotype}</span></div>
+      <div className="gh-d"><span className="dip">${d6.diplotype}</span><span className="fine">Activity score ${d6.score.toFixed(1)}</span></div>
+      <div className="act">
+        <div className="act-wrap"><div className="act-track" aria-hidden="true"><span className="act-z az-im"></span><span className="act-z az-nm"></span><span className="act-z az-um"></span></div><span className="act-mark" style=${{left:(d6.score/3*100)+'%'}} role="img" aria-label=${'Activity score '+d6.score.toFixed(1)+' on a 0 to 3 scale'}></span></div>
+        <div className="act-lbl"><span style=${{width:'41.67%'}}>IM</span><span style=${{width:'33.33%'}}>NM</span><span style=${{width:'25%'}}>UM</span></div>
+      </div>
+    </div>
+    ${showFlag&&flag.gene==='CYP2D6'&&html`<div className="flagbox" role="note"><${Icon} name="zap" size=${16}/><span>${flag.text}</span></div>`}
+    <div className="genes">
+      ${rest.map(g=>html`<div className="gene-row" key=${g.gene}>
+        <b>${g.gene}</b>
+        ${g.missing?html`<span className="fine">—</span><span><span className="chip chip-miss">Not tested</span></span>`:html`<span className="mono">${g.diplotype}</span><span><span className=${cx('chip',phCls(g.code))}>${g.phenotype}</span></span>`}
+      </div>`)}
+    </div>
+    ${showFlag&&flag.gene!=='CYP2D6'&&html`<div className="flagbox" role="note"><${Icon} name="zap" size=${16}/><span>${flag.text}</span></div>`}
+    <div className="card-f fine">Activity score bands follow CPIC and DPWG consensus. Supported genes in v0.3: CYP2D6, CYP2C19, CYP2C9, CYP3A5.</div>
+  </section>`;
+}
+function MedSearch({selected,onAdd}){
+  const [q,setQ]=useState(''),[open,setOpen]=useState(false),[hi,setHi]=useState(0);
+  const items=useMemo(()=>{const s=q.trim().toLowerCase();return DRUGS.filter(d=>!selected.includes(d.id)&&(!s||d.name.toLowerCase().includes(s)||d.cls.toLowerCase().includes(s)||d.tag.toLowerCase().includes(s))).slice(0,7)},[q,selected]);
+  const pick=d=>{onAdd(d.id);setQ('');setHi(0)};
+  const onKey=e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();setOpen(true);setHi(h=>Math.min(h+1,Math.max(items.length-1,0)))}
+    else if(e.key==='ArrowUp'){e.preventDefault();setHi(h=>Math.max(h-1,0))}
+    else if(e.key==='Enter'){if(open&&items[hi]){e.preventDefault();pick(items[hi])}}
+    else if(e.key==='Escape'){setOpen(false)}
+  };
+  return html`<div className="combo">
+    <label className="sr" htmlFor="med-q">Search medications</label>
+    <div className="search"><${Icon} name="search" size=${16}/>
+      <input id="med-q" role="combobox" aria-expanded=${open} aria-controls="med-list" aria-autocomplete="list" autoComplete="off" placeholder="Search medications, e.g. tamoxifen" value=${q}
+        onChange=${e=>{setQ(e.target.value);setOpen(true);setHi(0)}} onFocus=${()=>setOpen(true)} onBlur=${()=>setTimeout(()=>setOpen(false),120)} onKeyDown=${onKey}/>
+    </div>
+    ${open&&html`<ul className="menu" id="med-list" role="listbox">
+      ${items.length?items.map((d,i)=>html`<li key=${d.id} role="option" aria-selected=${i===hi} className=${cx('opt',i===hi&&'hi')} onMouseDown=${e=>{e.preventDefault();pick(d)}} onMouseEnter=${()=>setHi(i)}>
+        <div><strong>${d.name}</strong><span>${d.cls}</span></div><em>${d.tag}</em></li>`):html`<li className="opt none">No matching medication in the supported list</li>`}
+    </ul>`}
+  </div>`;
+}
+function MedsCard({meds,onAdd,onRemove}){
+  return html`<section className="card" aria-labelledby="h-med">
+    <div className="card-h"><span className="step">3</span><h2 className="card-t grow" id="h-med">Medications</h2><span className="chip">${meds.length} selected</span></div>
+    <${MedSearch} selected=${meds} onAdd=${onAdd}/>
+    <div className="meds">
+      ${meds.length===0&&html`<div className="fine" style=${{padding:'6px 2px'}}>No medications yet. Search above to add at least two.</div>`}
+      ${meds.map(id=>{const d=drugOf(id);return html`<div className="med" key=${id}><${Icon} name="pill" size=${18}/><div className="grow"><div className="med-n">${d.name}</div><div className="med-s">${d.cls}</div></div><button className="x" aria-label=${'Remove '+d.name} onClick=${()=>onRemove(id)}><${Icon} name="x" size=${16}/></button></div>`})}
+    </div>
+  </section>`;
+}
+
+const VICON={found:'triangle',none:'search',ambiguous:'help'};
+const VCLS={found:'v-found',none:'v-none',ambiguous:'v-amb'};
+function Verdict({r,patient}){
+  const d6=patient.genes.find(g=>g.gene==='CYP2D6');
+  return html`<section className=${cx('verdict',VCLS[r.status])} aria-labelledby="v-t">
+    <div className="v-top">
+      <div className="v-ic"><${Icon} name=${VICON[r.status]} size=${26}/></div>
+      <div className="grow">
+        <div className="eyebrow"><${Icon} name="shield" size=${14}/>Deterministic clinical assessment</div>
+        <h2 className="v-title" id="v-t">${r.title}</h2>
+        <p className="v-sum">${r.summary}</p>
+      </div>
+    </div>
+    ${r.status==='none'&&html`<div className="notsafe" role="note"><${Icon} name="info" size=${16}/><span><b>This is not a safety finding.</b> The rule set covers a limited number of curated associations. No entry means the engine has nothing to report, not that this combination has been shown to be safe.</span></div>`}
+    ${r.status==='ambiguous'&&html`<div className="notsafe" role="note"><${Icon} name="info" size=${16}/><span><b>An unresolved result is not reassurance.</b> The engine could not reach a documented answer for this patient and medication list.</span></div>`}
+    <dl className="v-meta">
+      <div><dt>Patient</dt><dd>${patient.name}<small>${patient.id} · CYP2D6 ${d6.diplotype}</small></dd></div>
+      <div><dt>Medications evaluated</dt><dd>${r.medIds.map(i=>drugOf(i).name).join(', ')}</dd></div>
+      <div><dt>Evidence basis</dt><dd>${r.basis}<small>${r.basisSub}</small></dd></div>
+      <div><dt>Rule</dt><dd className="mono" style=${{fontSize:'13px'}}>${r.ruleId}<small style=${{fontFamily:'var(--f-body)'}}>${r.engine} · snapshot ${r.snapshot}</small></dd></div>
+    </dl>
+  </section>`;
+}
+function Mechanism({r}){
+  const kind={gene:'fk-gene',inhib:'fk-inhib',sub:'',effect:'fk-effect',unk:'fk-unk',miss:'fk-miss'};
+  const title=r.nodes?'Mechanism':'What was checked';
+  return html`<section className="card" aria-labelledby="h-mech">
+    <div className="card-h"><${Icon} name=${r.nodes?'activity':'search'} size=${18}/><h2 className="card-t grow" id="h-mech">${title}</h2>${r.nodes&&html`<span className="fine">How the genotype and medications connect</span>`}</div>
+    <div className="card-b">
+      ${r.nodes?html`<div className="flow">${r.nodes.map((n,i)=>html`<${F} key=${i}>${i>0&&html`<div className="fconn" aria-hidden="true"><${Icon} name="arrow" size=${18}/></div>`}<div className=${cx('fnode',kind[n.k])}><div className="eyebrow">${n.label}</div><div className="fn-t">${n.title}</div><div className="fn-s">${n.sub}</div></div><//>`)}</div>`
+      :html`<ul className="checks">${r.checks.map((c,i)=>html`<li key=${i}><${Icon} name=${c.missing?'help':'minus'} size=${18}/><div className="grow"><strong>${c.label}</strong><span className="n">${c.note}</span></div><span className=${cx('chip',c.missing&&'chip-miss')}>${c.missing?'Gene result missing':'No curated entry'}</span></li>`)}</ul>`}
+    </div>
+  </section>`;
+}
+function Evidence({r}){
+  return html`<section className="card" aria-labelledby="h-ev">
+    <div className="card-h"><${Icon} name="book" size=${18}/><h2 className="card-t grow" id="h-ev">Evidence references</h2><span className="chip chip-teal">${r.evidence.length}</span></div>
+    <div className="card-b">
+      ${r.evidence.map((e,i)=>html`<div className="ev" key=${i}><span className="ev-src">${e.src}</span><div className="grow"><div className="ev-t">${e.title}</div><div className="ev-c">${e.cite} · ${e.kind}</div>${e.url&&html`<a href=${e.url} target="_blank" rel="noopener noreferrer">Open source<${Icon} name="link" size=${12}/></a>`}</div></div>`)}
+    </div>
+  </section>`;
+}
+function Limits({r}){
+  return html`<section className="card" aria-labelledby="h-lim">
+    <div className="card-h"><${Icon} name="triangle" size=${18}/><h2 className="card-t grow" id="h-lim">Missing data and limitations</h2></div>
+    <div className="card-b">
+      <div className="sub-h"><${Icon} name="minus" size=${14}/>Missing data</div>
+      <ul className="ul">${r.missing.map((t,i)=>html`<li key=${i}><${Icon} name="chevron" size=${14}/><span>${t}</span></li>`)}</ul>
+      <div className="sub-h"><${Icon} name="info" size=${14}/>Limitations</div>
+      <ul className="ul">${r.limits.map((t,i)=>html`<li key=${i}><${Icon} name="chevron" size=${14}/><span>${t}</span></li>`)}</ul>
+    </div>
+  </section>`;
+}
+function Results({r,stale,onRerun}){
+  const patient=PATIENTS.find(p=>p.id===r.patientId);
+  return html`<div className=${cx('results',stale&&'is-stale')}>
+    ${stale&&html`<div className="banner banner-amber" role="status"><${Icon} name="clock" size=${16}/><span className="grow">Inputs changed after this assessment. The result below is out of date.</span><button className="btn btn-sm" onClick=${onRerun}>Run again</button></div>`}
+    <${Verdict} r=${r} patient=${patient}/>
+    <div className="stale-fade"><${Mechanism} r=${r}/></div>
+    <div className="two stale-fade"><${Evidence} r=${r}/><${Limits} r=${r}/></div>
+  </div>`;
+}
+function Idle(){
+  return html`<section className="card" aria-labelledby="h-idle">
+    <div className="card-h"><${Icon} name="shield" size=${18}/><h2 className="card-t grow" id="h-idle">Assessment</h2><span className="chip">Not run yet</span></div>
+    <div className="card-b" style=${{display:'flex',flexDirection:'column',gap:16}}>
+      <p style=${{color:'var(--ink-2)',maxWidth:'62ch'}}>Choose a synthetic patient and at least two medications, then run the assessment. The deterministic engine returns exactly one of three outcomes.</p>
+      <div className="outs">
+        <div className="out o-found"><div className="out-ic"><${Icon} name="triangle" size=${20}/></div><h3>Association found</h3><p>A curated, evidence-supported gene–drug–drug association applies to this patient and medication list.</p></div>
+        <div className="out o-none"><div className="out-ic"><${Icon} name="search" size=${20}/></div><h3>No documented association found</h3><p>Nothing in the supported rule set matches. This is not a statement that the combination is safe.</p></div>
+        <div className="out o-amb"><div className="out-ic"><${Icon} name="help" size=${20}/></div><h3>Ambiguous or insufficient evidence</h3><p>Evidence conflicts, or a required result such as a genotype is missing.</p></div>
+      </div>
+      <div className="banner banner-slate"><${Icon} name="lock" size=${16}/><span>Verdicts come from a deterministic rules engine. Machine-learning output is never used.</span></div>
+    </div>
+  </section>`;
+}
+function Loading({step}){
+  const items=['Resolving genotypes to phenotypes','Matching gene–drug–drug rules','Collecting evidence references'];
+  return html`<div className="results" aria-busy="true">
+    <section className="card"><div className="card-h"><${Icon} name="loader" size=${18} spin=${true}/><h2 className="card-t grow">Running assessment</h2><span className="chip">Deterministic engine</span></div>
+      <div className="card-b"><ul className="steps">${items.map((t,i)=>html`<li key=${i} className=${step>i?'done':step===i?'on':''}>${step>i?html`<${Icon} name="check" size=${16} className="ok"/>`:step===i?html`<${Icon} name="loader" size=${16} spin=${true}/>`:html`<${Icon} name="minus" size=${16}/>`}${t}</li>`)}</ul></div></section>
+    <div className="skel" style=${{height:190,borderRadius:16}}></div>
+    <div className="skel" style=${{height:120}}></div>
+    <div className="two"><div className="skel" style=${{height:150}}></div><div className="skel" style=${{height:150}}></div></div>
+  </div>`;
+}
+function ErrorPane({onRetry}){
+  return html`<div className="err" role="alert"><${Icon} name="alert" size=${28} className=""/><div className="grow"><h2>Rules engine unreachable</h2><p>The assessment service did not respond, so no verdict was produced. This is not a “no association” result. Check that the backend is running, then try again.</p><div style=${{display:'flex',gap:8,marginTop:14,flexWrap:'wrap'}}><button className="btn btn-primary btn-sm" onClick=${onRetry}><${Icon} name="retry" size=${14}/>Try again</button><span className="chip chip-crit">Error code: ENGINE_TIMEOUT</span></div></div></div>`;
+}
+function PKPanel(){
+  return html`<section className="pk" aria-labelledby="h-pk">
+    <div className="card-h" style=${{borderBottom:'1px solid var(--line-2)'}}><${Icon} name="chart" size=${18}/><h2 className="card-t grow" id="h-pk">Pharmacokinetic simulation</h2><span className="chip chip-miss">Module in development</span></div>
+    <div className="card-b" style=${{display:'flex',flexDirection:'column',gap:14}}>
+      <svg viewBox="0 0 560 190" role="img" aria-label="Placeholder for a concentration–time graph">
+        <g style=${{stroke:'var(--line)',strokeWidth:1}}>${[40,80,120].map(y=>html`<line key=${y} x1="52" x2="540" y1=${y} y2=${y}/>`)}</g>
+        <g style=${{stroke:'var(--ink-3)',strokeWidth:1.5,fill:'none'}}><path d="M52 14V156H540"/></g>
+        <path d="M52 156C90 40 130 30 180 58S300 128 540 148" style=${{stroke:'var(--slate-300)',strokeWidth:3,fill:'none',strokeDasharray:'6 7'}}/>
+        <g style=${{fill:'var(--ink-3)',fontSize:'11px',fontFamily:'var(--f-body)'}}><text x="296" y="182" textAnchor="middle">Time (h)</text><text transform="translate(14 85) rotate(-90)" textAnchor="middle">Concentration</text><text x="300" y="100" textAnchor="middle" style=${{fontSize:'12px'}}>Concentration–time curve renders here</text></g>
+      </svg>
+      <div className="fine">Teammate module mounts here. It receives the patient and medication list and returns time series. It has no influence on the verdict above.</div>
+      <div className="pk-code">${'<PKPanel patientId medications phenotypes />  →  { series: [{ drug, t[], c[] }], units }'}</div>
+    </div>
+  </section>`;
+}
+
+const SCEN=[
+  {id:'SYN-1042',icon:'triangle',text:'Association found'},
+  {id:'SYN-2217',icon:'search',text:'No documented association'},
+  {id:'SYN-3090',icon:'help',text:'Insufficient evidence'}
+];
+function ReviewView({goExplorer}){
+  const [pid,setPid]=useState('SYN-1042');
+  const [meds,setMeds]=useState(PATIENTS[0].defaultMeds);
+  const [status,setStatus]=useState('idle');
+  const [step,setStep]=useState(0);
+  const [result,setResult]=useState(null);
+  const timers=useRef([]);
+  const clear=()=>{timers.current.forEach(clearTimeout);timers.current=[]};
+  const run=(patientId,medIds,fail)=>{
+    clear();setStatus('loading');setStep(0);
+    const t=(fn,ms)=>timers.current.push(setTimeout(fn,ms));
+    t(()=>setStep(1),350);t(()=>setStep(2),700);t(()=>setStep(3),1050);
+    t(()=>{
+      if(fail){setStatus('error');return}
+      const p=PATIENTS.find(x=>x.id===patientId);
+      setResult({...evaluate(p,medIds),patientId,key:patientId+'|'+medIds.join(',')});
+      setStatus('done');
+    },1400);
+  };
+  useEffect(()=>{run(pid,meds,false);return clear},[]);
+  const patient=PATIENTS.find(p=>p.id===pid);
+  const key=pid+'|'+meds.join(',');
+  const stale=status==='done'&&result&&result.key!==key;
+  const pick=id=>{const p=PATIENTS.find(x=>x.id===id);clear();setPid(id);setMeds(p.defaultMeds);setStatus('idle');setResult(null)};
+  const scenario=id=>{const p=PATIENTS.find(x=>x.id===id);setPid(id);setMeds(p.defaultMeds);run(id,p.defaultMeds,false)};
+  const flag=status==='done'&&result&&!stale?result.flag:null;
+  let pane;
+  if(status==='idle')pane=html`<${Idle}/>`;
+  else if(status==='loading')pane=html`<${Loading} step=${step}/>`;
+  else if(status==='error')pane=html`<${ErrorPane} onRetry=${()=>run(pid,meds,false)}/>`;
+  else pane=html`<${Results} r=${result} stale=${stale} onRerun=${()=>run(pid,meds,false)}/>`;
+  return html`<div className="content">
+    <div className="page-h">
+      <div><h1 className="page-t">Medication review</h1><p className="page-sub">Check a synthetic patient’s medications against evidence-supported pharmacogenetic gene–drug–drug associations.</p></div>
+    </div>
+    <div className="scen" role="group" aria-label="Demo scenarios">
+      <span className="scen-l">Demo scenarios</span>
+      ${SCEN.map(s=>html`<button key=${s.id} className="scen-b" aria-pressed=${pid===s.id&&status!=='idle'} onClick=${()=>scenario(s.id)}><${Icon} name=${s.icon} size=${15}/>${s.text}</button>`)}
+      <button className="scen-b" onClick=${()=>run(pid,meds,true)}><${Icon} name="alert" size=${15}/>Simulate engine error</button>
+    </div>
+    <div className="review">
+      <div className="col">
+        <${PatientCard} pid=${pid} onPick=${pick}/>
+        <${GeneticsCard} patient=${patient} flag=${flag}/>
+        <${MedsCard} meds=${meds} onAdd=${id=>setMeds(m=>[...m,id])} onRemove=${id=>setMeds(m=>m.filter(x=>x!==id))}/>
+        <div className="runbar">
+          <button className="btn btn-primary btn-block" disabled=${meds.length<2||status==='loading'} onClick=${()=>run(pid,meds,false)}>${status==='loading'?html`<${Icon} name="loader" size=${16} spin=${true}/>`:html`<${Icon} name="play" size=${16}/>`}${status==='loading'?'Running…':'Run assessment'}</button>
+          <div className="fine" style=${{textAlign:'center'}}>${meds.length<2?'Add at least two medications to run.':'Deterministic rules only. No machine learning is used.'}</div>
+        </div>
+      </div>
+      <div className="col">
+        ${pane}
+        <div className="xlink"><${Icon} name="flask" size=${22}/><div className="grow"><b>Molecular explorer · experimental</b><span>Compare molecular structures. Separate from this assessment and never used in the verdict.</span></div><button className="btn btn-sm" onClick=${goExplorer}>Open explorer<${Icon} name="arrow" size=${14}/></button></div>
+        <${PKPanel}/>
+      </div>
+    </div>
+    <${Footer}/>
+  </div>`;
+}
+
+/* ============ molecular explorer ============ */
+function Meter({value,threshold}){
+  return html`<div><div className="meter" role="img" aria-label=${'Model score '+value.toFixed(2)+' on a 0 to 1 scale, threshold '+threshold.toFixed(2)}><i style=${{width:(value*100)+'%'}}></i><u style=${{left:(threshold*100)+'%'}}></u></div>
+    <div className="m-lbl"><span style=${{left:'0%'}}>0</span><span style=${{left:(threshold*100)+'%'}}>${threshold.toFixed(2)} threshold</span><span style=${{left:'100%'}}>1</span></div></div>`;
+}
+function Neighbours({res}){
+  return html`<section className="card secA" aria-labelledby="h-nb">
+    <div className="card-h"><span className="step">A</span><div className="grow"><h2 className="card-t" id="h-nb">Molecular neighbours</h2><div className="card-s">Reference compounds with the most similar structure</div></div><span className="chip chip-navy">Descriptive, not predictive</span></div>
+    <div style=${{padding:'10px 16px 0'}} className="fine"><b style=${{color:'var(--ink-2)'}}>Method</b> · Morgan fingerprint, radius 2, 2,048 bits · Tanimoto similarity · reporting threshold 0.30 · reference set: open compound library (5 in this demo)</div>
+    ${res.neighbours.length?html`<ul className="nb">${res.neighbours.map((n,i)=>html`<li key=${n.id}>
+      <span className="nb-rank">${i+1}</span>
+      <div className="nb-th"><${Structure} mol=${n.mol} label=${n.name+' structure'}/></div>
+      <div style=${{minWidth:0}}><div className="nb-n">${n.name}</div><div className="nb-r">${n.role}</div><div className="nb-sm" title=${n.smiles}>${n.smiles}</div></div>
+      <div className="sc"><div className="sc-n">${n.score.toFixed(2)}</div><div className="bar" role="img" aria-label=${'Tanimoto '+n.score.toFixed(2)}><i style=${{width:(n.score*100)+'%'}}></i></div></div>
+    </li>`)}</ul>`:html`<div className="empty-nb"><${Icon} name="search" size=${20}/><div><b>No close neighbours found</b><div className="fine">No reference compound reached the 0.30 threshold. The highest score was ${res.maxSim.toFixed(2)}. This structure is unlike the reference set.</div></div></div>`}
+    <div style=${{padding:'0 16px 16px'}}><div className="banner banner-slate"><${Icon} name="info" size=${16}/><span><b>Similarity is not interaction risk.</b> Structurally similar molecules can behave differently in the body, and dissimilar ones can interact. A high score does not establish a clinical interaction.</span></div></div>
+  </section>`;
+}
+function MLCard({res}){
+  const inh=res.score>=.5;
+  const dom={in:['chip-teal','Within applicability domain'],low:['chip-amber','Low confidence: distant from training data'],out:['chip-amber','Outside applicability domain']}[res.domain];
+  return html`<section className="exp-card" aria-labelledby="h-ml">
+    <div className="hatch" aria-hidden="true"></div>
+    <div className="card-h"><span className="step step-exp">B</span><div className="grow"><h2 className="card-t" id="h-ml">Experimental CYP2D6 ML prediction</h2><div className="card-s">Supervised classifier trained locally on public assay data</div></div><span className="chip chip-exp"><${Icon} name="flask" size=${13}/>Experimental</span></div>
+    <div className="mlgrid">
+      <div className="pred">
+        <div className="eyebrow">Predicted assay class</div>
+        <div className="pred-h">${inh?'Inhibitor-like in the CYP2D6 assay':'Non-inhibitor-like in the CYP2D6 assay'}</div>
+        <div><div className="pred-n"><b>${res.score.toFixed(2)}</b><span className="fine">Random Forest class probability</span></div><${Meter} value=${res.score} threshold=${.5}/></div>
+        <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}><span className=${cx('chip',dom[0])}><${Icon} name=${res.domain==='in'?'check':'triangle'} size=${13}/>${dom[1]}</span><span className="chip">Nearest training compound ${res.nearest.toFixed(2)}</span></div>
+        <p className="fine">The score is a model probability, not a calibrated clinical risk. It describes activity in a laboratory assay, not what happens in a patient.</p>
+      </div>
+      <div className="mdl">
+        <h3><${Icon} name="chart" size=${16}/>Model evaluation<span className="chip chip-exp">Placeholder values</span></h3>
+        <div className="mets">${MODEL.metrics.map(m=>html`<div className="met" key=${m[0]}><small>${m[0]}</small><b>${m[1]}</b></div>`)}</div>
+        <dl className="kv">
+          <dt>Algorithm</dt><dd>${MODEL.algo}</dd>
+          <dt>Features</dt><dd>${MODEL.features}</dd>
+          <dt>Training data</dt><dd>${MODEL.data}</dd>
+          <dt>Evaluation</dt><dd>${MODEL.split}, held-out test set</dd>
+        </dl>
+        <p className="fine" style=${{marginTop:10}}>Metrics are read from metrics.json written at training time. The numbers shown here are layout placeholders.</p>
+      </div>
+    </div>
+    <div className="iso"><${Icon} name="lock" size=${16}/><span><b>Isolated from the clinical assessment.</b> This prediction is never an input to the deterministic rules engine and cannot change a Medication Review verdict.</span></div>
+  </section>`;
+}
+function Limitations(){
+  const L=[['database','In vitro assay labels','Training labels come from a high-throughput CYP2D6 inhibition screen, not from patient outcomes.'],['hex','Scaffold-split evaluation','Performance on structurally new compounds is typically lower than on close analogues of training data.'],['ban','Structure only','The model sees no dose, exposure, genotype or co-medication.'],['lock','Not wired to the verdict','Predictions never feed the deterministic assessment.']];
+  return html`<section className="card" aria-labelledby="h-xl"><div className="card-h"><${Icon} name="info" size=${18}/><h2 className="card-t grow" id="h-xl">Limitations and applicability</h2></div>
+    <div className="lims">${L.map(l=>html`<div className="lim" key=${l[1]}><${Icon} name=${l[0]} size=${16}/><div><b>${l[1]}</b>${l[2]}</div></div>`)}</div></section>`;
+}
+function ExplorerView(){
+  const [text,setText]=useState(LIB.fluoxetine.smiles);
+  const [status,setStatus]=useState('idle');
+  const [res,setRes]=useState(null);
+  const [err,setErr]=useState('');
+  const t=useRef(null);
+  const analyse=raw=>{
+    clearTimeout(t.current);
+    const out=explore(raw);
+    if(out.error){setErr(out.error);setRes(null);setStatus('error');return}
+    setErr('');setStatus('loading');
+    t.current=setTimeout(()=>{setRes(out);setStatus('done')},900);
+  };
+  useEffect(()=>{analyse(text);return()=>clearTimeout(t.current)},[]);
+  const preset=(smi)=>{setText(smi);analyse(smi)};
+  const q=res&&res.id?LIB[res.id]:null;
+  const valid=status==='done'||status==='loading';
+  let right;
+  if(status==='idle')right=html`<section className="card"><div className="card-b" style=${{display:'flex',flexDirection:'column',gap:12}}><div className="eyebrow">Two separate outputs</div><p style=${{color:'var(--ink-2)',maxWidth:'60ch'}}>Enter a SMILES string to see structurally similar reference compounds (A) and an experimental CYP2D6 inhibition prediction (B). They answer different questions and are shown apart on purpose.</p></div></section>`;
+  else if(status==='error')right=html`<div className="err" role="alert"><${Icon} name="alert" size=${28}/><div className="grow"><h2>This SMILES could not be parsed</h2><p>${err} Nothing was analysed. Check the string, or choose an example compound on the left.</p></div></div>`;
+  else if(status==='loading')right=html`<div className="results" aria-busy="true"><div className="skel" style=${{height:300}}></div><div className="skel" style=${{height:260,border:'1.5px dashed var(--exp-300)'}}></div></div>`;
+  else right=html`<div className="results">
+    ${res.sampleOnly&&html`<div className="banner banner-slate"><${Icon} name="info" size=${16}/><span>Prototype note: this build has mock results for the preset compounds only. Other valid SMILES show sample output. The production backend returns real RDKit results for any valid structure.</span></div>`}
+    <${Neighbours} res=${res}/><${MLCard} res=${res}/><${Limitations}/></div>`;
+  return html`<div className="content">
+    <div className="page-h"><div><h1 className="page-t">Molecular explorer</h1><p className="page-sub">Find structurally similar compounds and get an experimental CYP2D6 inhibition prediction for a molecule.</p></div></div>
+    <div className="exp-banner" role="note"><${Icon} name="flask" size=${24}/><div className="grow"><b>Experimental research tool</b><p>Outputs here are computational. They are not clinical evidence, are not validated for patient care, and never change a Medication Review verdict.</p></div>
+      <div className="exp-chips"><span className="chip chip-exp"><${Icon} name="cpu" size=${13}/>Runs locally</span><span className="chip chip-exp">RDKit</span><span className="chip chip-exp">scikit-learn</span><span className="chip chip-exp">No external APIs</span></div></div>
+    <div className="xgrid">
+      <div className="col">
+        <section className="card" aria-labelledby="h-in">
+          <div className="card-h"><h2 className="card-t grow" id="h-in">Input molecule</h2>${valid&&html`<span className="chip chip-teal"><${Icon} name="check" size=${13}/>Valid SMILES</span>`}</div>
+          <div className="card-b" style=${{display:'flex',flexDirection:'column',gap:12}}>
+            <div><label className="eyebrow" htmlFor="smiles" style=${{marginBottom:6}}>SMILES</label>
+              <textarea id="smiles" className=${cx('ta',status==='error'&&'bad')} value=${text} spellCheck=${false} placeholder="e.g. CNCCC(c1ccccc1)Oc1ccc(cc1)C(F)(F)F" onChange=${e=>setText(e.target.value)} onKeyDown=${e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();analyse(text)}}}></textarea></div>
+            ${status==='error'&&html`<div className="field-err" role="alert"><${Icon} name="alert" size=${16}/><span>${err}</span></div>`}
+            <div style=${{display:'flex',gap:8}}>
+              <button className="btn btn-exp grow" onClick=${()=>analyse(text)} disabled=${status==='loading'}>${status==='loading'?html`<${Icon} name="loader" size=${16} spin=${true}/>`:html`<${Icon} name="search" size=${16}/>`}${status==='loading'?'Analysing…':'Validate and search'}</button>
+              <button className="btn" onClick=${()=>{clearTimeout(t.current);setText('');setRes(null);setErr('');setStatus('idle')}}>Clear</button>
+            </div>
+            <div><div className="eyebrow" style=${{marginBottom:6}}>Examples</div><div className="presets">
+              <button className="preset" onClick=${()=>preset(LIB.fluoxetine.smiles)}>Fluoxetine</button>
+              <button className="preset" onClick=${()=>preset(LIB.atomoxetine.smiles)}>Atomoxetine</button>
+              <button className="preset" onClick=${()=>preset(LIB.metformin.smiles)}>Metformin</button>
+              <button className="preset" onClick=${()=>preset('CNCCC(c1ccccc1')}>Invalid example</button></div></div>
+          </div>
+        </section>
+        <section className="card" aria-labelledby="h-q">
+          <div className="card-h"><h2 className="card-t grow" id="h-q">Query structure</h2><span className="chip">2D depiction</span></div>
+          <div className="card-b" style=${{display:'flex',flexDirection:'column',gap:14}}>
+            <div className="struct">${valid&&res&&q?html`<${Structure} mol=${q.mol} label=${q.name+' structure'}/>`:valid&&res?html`<div className="ph"><${Icon} name="hex" size=${34}/>Structure preview renders here from the backend</div>`:html`<div className="ph"><${Icon} name="hex" size=${34}/>${status==='error'?'No structure to draw':'Enter a SMILES string'}</div>`}</div>
+            ${valid&&res&&html`<dl className="props"><dt>Name</dt><dd>${res.name}</dd><dt>Formula</dt><dd>${res.formula}</dd><dt>Mol. weight</dt><dd>${res.mw}${q?' g/mol':''}</dd><dt>SMILES</dt><dd className="mono">${res.smiles}</dd></dl>`}
+            <div className="fine">Production renders this with RDKit on the local backend. The prototype uses a fixed drawing.</div>
+          </div>
+        </section>
+      </div>
+      <div className="col">${right}</div>
+    </div>
+    <${Footer}/>
+  </div>`;
+}
+
+/* ============ app ============ */
+function App(){
+  let initial='review';
+  try{if((location.hash||'').replace('#','')==='explorer')initial='explorer'}catch(e){}
+  const [view,setView]=useState(initial);
+  return html`<div className="app">
+    <${Sidebar} view=${view} setView=${setView}/>
+    <div className="main">
+      <${Topbar} view=${view}/>
+      <div hidden=${view!=='review'}><${ReviewView} goExplorer=${()=>{setView('explorer');window.scrollTo(0,0)}}/></div>
+      <div hidden=${view!=='explorer'}><${ExplorerView}/></div>
+    </div>
+  </div>`;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+})();
+</script>
+
+</body></html>

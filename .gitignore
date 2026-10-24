@@ -1,0 +1,28 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+*.pyc
+
+# Trained model artifacts & generated indices — regenerate via backend/ml/*.py
+backend/models/*.joblib
+backend/models/*.json
+
+# Downloaded dataset caches
+backend/data/
+~/scikit_learn_data/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Env files
+.env
+.env.local
+*.env.local
+
+# OS
+.DS_Store
