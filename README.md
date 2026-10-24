@@ -128,6 +128,7 @@ npm test        # Vitest + React Testing Library
 - [DEMO.md](./DEMO.md) — a 2-minute walkthrough script.
 - `docs/contracts/` — generated JSON Schema and worked examples for the
   Medication Review contract (source of truth: `frontend/src/contracts/`).
+- [THIRD_PARTY.md](./THIRD_PARTY.md) — direct dependency licenses.
 
 ## Git
 

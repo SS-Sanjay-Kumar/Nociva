@@ -162,6 +162,9 @@ function ModelEvalGrid({ modelInfo }: { modelInfo: ModelInfo | null }) {
         <dt className="text-ink-3">Decision threshold</dt>
         <dd>{m.decisionThreshold !== null && m.decisionThreshold !== undefined ? m.decisionThreshold.toFixed(3) : '—'}</dd>
       </dl>
+      <p className="text-[11.5px] text-ink-3">
+        Trained on {modelInfo.dataset.name} ({modelInfo.dataset.license}), via {modelInfo.dataset.source}.
+      </p>
     </>
   )
 }
