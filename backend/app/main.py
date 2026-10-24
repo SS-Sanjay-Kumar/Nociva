@@ -23,8 +23,14 @@ from app.routers.molecular import router as molecular_router
 app = FastAPI(title="GeneCollision API", version="0.1.0")
 
 LOCAL_FRONTEND_ORIGINS = [
+    # Vite's default dev port, plus the next couple of fallback ports it
+    # tries when 5173 is already taken by something else on the machine.
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
 ]
 
 app.add_middleware(
