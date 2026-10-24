@@ -14,7 +14,7 @@ GeneCollision/
       schemas/molecular.py        Pydantic request/response models
     ml/        Dataset prep, training, reference-index build scripts
     models/    Trained artifacts (gitignored — regenerate, don't commit)
-    tests/     pytest suite (26 tests)
+    tests/     pytest suite (27 tests)
   frontend/    React + TypeScript + Vite + Tailwind frontend
     src/
       features/review/      Medication Review (mock-mode feature)
@@ -34,7 +34,7 @@ between them is a plain navigation link.
 | Area | Status |
 |---|---|
 | **Medication Review** | Frontend only, running against **typed mock fixtures** (`frontend/src/features/review/mocks/`). No backend call is made. Every result is labelled a demonstration fixture. The deterministic rule-engine backend this page expects does not exist yet — see INTEGRATION.md §3 for the contract a teammate needs to implement. |
-| **Molecular Explorer** | **Live** against the local FastAPI service: real RDKit validation/canonicalisation/2D rendering, real Tanimoto similarity search over a 4,000-compound reference index, and a real scikit-learn RandomForestClassifier trained on TDC CYP2D6_Veith. Nothing here is faked; if the backend is down or the model isn't trained, the UI says so explicitly instead of inventing a result. |
+| **Molecular Explorer** | **Live** against the local FastAPI service: real RDKit validation/canonicalisation/2D rendering, real Tanimoto similarity search over the classifier's full 10,504-compound **training split** (not a sample — see below), and a real scikit-learn RandomForestClassifier trained on TDC CYP2D6_Veith. Nothing here is faked; if the backend is down or the model isn't trained, the UI says so explicitly instead of inventing a result. |
 | **`backend/app/main.py`** | A **minimal stand-in**, not a competing backend — it existed only because no backend file existed yet when Stream 1 started. It wires up CORS, `/health`, and `app.include_router(molecular_router)`. The teammate's Supabase-backed backend should replace or absorb this file; see INTEGRATION.md §1 for the two-line merge. |
 
 ## Prerequisites
@@ -54,7 +54,9 @@ pip install -r requirements.txt
 # This downloads data to ~/scikit_learn_data and writes artifacts to backend/models/.
 python ml/train_cyp2d6_model.py
 
-# One-time: build the Tanimoto similarity reference index.
+# One-time: build the Tanimoto similarity reference index — this is the
+# classifier's own training split (same scaffold split, same compounds),
+# not a separate sample, so "similar to training data" means exactly that.
 python ml/build_reference_index.py
 
 # Run the API
@@ -75,7 +77,7 @@ source .venv/bin/activate
 python -m pytest tests/ -v
 ```
 
-All 26 tests cover: fingerprint validity/reproducibility, data cleaning (invalid SMILES,
+All 27 tests cover: fingerprint validity/reproducibility, data cleaning (invalid SMILES,
 duplicates, conflicting labels), Tanimoto similarity (including the reporting-threshold
 empty-neighbours case and training-set membership flagging), scaffold train/val/test
 separation, classifier loading/inference determinism, and the HTTP API (valid/invalid/

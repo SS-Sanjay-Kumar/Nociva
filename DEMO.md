@@ -45,15 +45,17 @@ point is a real computation against a locally-trained model — but it's
 experimental, and it never changes the Medication Review verdict."*
 
 1. **Fluoxetine** (loads by default): real RDKit structure, 5 Tanimoto
-   neighbours from a 4,000-compound reference set, predicted **inhibitor**
-   at a raw score of ~0.80.
+   neighbours from the classifier's full 10,504-compound training split —
+   point at the method line, which reads that count from the live response,
+   not a hardcoded number. Predicted **inhibitor** at a raw score of ~0.80.
    - Point at **"Raw model score (uncalibrated)"**: *"This is an assay
      label, not a patient outcome — it's never calibrated against real-world
      risk."*
 
-2. **Aspirin** preset: predicted **non-inhibitor**, low score (~0.02), two
-   distant neighbours (~0.36, ~0.36) — point out the method line showing the
-   real fingerprint settings and reference-set size, not placeholder text.
+2. **Aspirin** preset: predicted **non-inhibitor**, low score (~0.02), but a
+   close neighbour at ~0.86 Tanimoto (an aspirin diester analogue) — a good
+   contrast to make: *"High structural similarity and a low inhibition score
+   can sit right next to each other. One doesn't imply the other."*
 
 3. **Metformin** preset: predicted **non-inhibitor** (~0.13), only one
    neighbour clears the 0.30 reporting threshold at ~0.36 — a good moment to

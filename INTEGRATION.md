@@ -107,19 +107,19 @@ base64 strings in the live response, truncated to 2 of 5 neighbours):
   "molecularWeight": 180.16,
   "neighbors": [
     {
-      "identifier": "CYP2D6_Veith#846",
-      "smiles": "O=C(O)CSc1ccccc1C(=O)O",
-      "canonicalSmiles": "O=C(O)CSc1ccccc1C(=O)O",
-      "tanimotoSimilarity": 0.3611111111111111
+      "identifier": "CYP2D6_Veith_train#4107",
+      "smiles": "CC(=O)Oc1ccccc1C(=O)Oc1ccccc1C(=O)O",
+      "canonicalSmiles": "CC(=O)Oc1ccccc1C(=O)Oc1ccccc1C(=O)O",
+      "tanimotoSimilarity": 0.8571428571428571
     },
     {
-      "identifier": "CYP2D6_Veith#497",
-      "smiles": "O=C(O)c1ccc(C(=O)O)c2c(C(=O)O)ccc(C(=O)O)c12",
-      "canonicalSmiles": "O=C(O)c1ccc(C(=O)O)c2c(C(=O)O)ccc(C(=O)O)c12",
-      "tanimotoSimilarity": 0.35714285714285715
+      "identifier": "CYP2D6_Veith_train#10262",
+      "smiles": "O=C(O)c1ccccc1OP(=O)(O)O",
+      "canonicalSmiles": "O=C(O)c1ccccc1OP(=O)(O)O",
+      "tanimotoSimilarity": 0.53125
     }
   ],
-  "maxSimilarity": 0.3611111111111111,
+  "maxSimilarity": 0.8571428571428571,
   "inTrainingSet": false,
   "cyp2d6": {
     "modelTrained": true,
@@ -135,7 +135,7 @@ base64 strings in the live response, truncated to 2 of 5 neighbours):
     "license": "CC BY 4.0",
     "method": "Morgan fingerprints (radius=2, 2048 bits) + Tanimoto similarity against a cached reference index; CYP2D6 inhibition classified by a locally-trained scikit-learn RandomForestClassifier.",
     "fingerprint": { "type": "morgan", "radius": 2, "nBits": 2048 },
-    "referenceSetSize": 4000,
+    "referenceSetSize": 10504,
     "reportingThreshold": 0.3
   },
   "limitations": [
@@ -153,12 +153,21 @@ Field notes:
   clear the threshold, `neighbors` is `[]` but `maxSimilarity` still reports
   the highest score found, so the UI can say e.g. "nothing reached 0.30, the
   closest was 0.12" instead of just going blank.
+- `provenance.referenceSetSize` **always equals `model-info`'s
+  `metrics.nTrain`** (`10504` as of the last training run) — the reference
+  index (`backend/ml/build_reference_index.py`) is built from the
+  classifier's own scaffold-split training set, not a separate sample, so
+  `inTrainingSet` and the "Similar to training data" chip mean exactly what
+  they say. Enforced by a backend test
+  (`test_reference_set_size_matches_training_split_size`).
 - `inTrainingSet` is `true` when the canonical SMILES exactly matches a
-  reference-index compound, or max Tanimoto similarity is `>= 0.999` — i.e.
-  the CYP2D6 score reflects memorisation of that exact training example, not
-  generalisation.
+  reference-index (i.e. training-set) compound, or max Tanimoto similarity
+  is `>= 0.999` — i.e. the CYP2D6 score reflects memorisation of that exact
+  training example, not generalisation.
 - `queryImageBase64` / `neighbors[].imageBase64` are PNG, base64-encoded, no
   `data:` prefix (the frontend prepends `data:image/png;base64,`).
+- The frontend never hardcodes `referenceSetSize` or any other count — the
+  Explorer's method line (`NeighboursCard`) reads it from this response.
 
 Real response for an invalid SMILES (`curl ... -d
 '{"smiles":"not-a-smiles((("}'`) — still HTTP `200`, this is a normal
