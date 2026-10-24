@@ -3,17 +3,19 @@ import { MOCK_PATIENTS } from './mocks/patients'
 import { MOCK_MEDICATIONS } from './mocks/medications'
 import { evaluateCombination } from './mocks/assessments'
 import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
+import { apiRequest } from '../../api/client'
+import { AssessmentResultSchema, MedicationListSchema, PatientListSchema } from '../../contracts/review'
 
 /**
  * Medication Review API adapter.
  *
- * MEDICATION_REVIEW_MOCK_MODE is currently always true: the teammate's
- * deterministic rule-engine backend contract is not yet available. All
- * functions here simulate network latency and return data clearly labelled
- * as mock fixtures (AssessmentResult.isMock === true).
- *
- * When the backend contract lands, replace the bodies below with
- * apiRequest<T>() calls per INTEGRATION.md, without changing call sites.
+ * Controlled by VITE_REVIEW_MODE (see lib/config.ts). In "mock" mode (the
+ * default — the teammate's deterministic rule-engine backend contract is
+ * not yet live), every function simulates network latency and returns data
+ * clearly labelled as a fixture (AssessmentResult.isMock === true). In
+ * "live" mode, the exact same functions call the real endpoints documented
+ * in INTEGRATION.md §3 through the central, contract-validated API client —
+ * no call site elsewhere in the app needs to change either way.
  */
 
 const MOCK_LATENCY_MS = 450
@@ -26,7 +28,7 @@ export async function fetchPatients(): Promise<PatientProfile[]> {
   if (MEDICATION_REVIEW_MOCK_MODE) {
     return delay(MOCK_PATIENTS)
   }
-  throw new Error('Live Medication Review backend not yet integrated.')
+  return apiRequest<PatientProfile[]>('/api/patients', {}, PatientListSchema)
 }
 
 export async function fetchMedications(query = ''): Promise<Medication[]> {
@@ -36,7 +38,8 @@ export async function fetchMedications(query = ''): Promise<Medication[]> {
       : MOCK_MEDICATIONS
     return delay(filtered)
   }
-  throw new Error('Live Medication Review backend not yet integrated.')
+  const qs = query ? `?query=${encodeURIComponent(query)}` : ''
+  return apiRequest<Medication[]>(`/api/medications${qs}`, {}, MedicationListSchema)
 }
 
 /** Runs one deterministic assessment for the whole selected medication list. */
@@ -46,7 +49,11 @@ export async function runAssessment(
   options: { simulateError?: boolean } = {},
 ): Promise<AssessmentResult> {
   if (!MEDICATION_REVIEW_MOCK_MODE) {
-    throw new Error('Live Medication Review backend not yet integrated.')
+    return apiRequest<AssessmentResult>(
+      '/api/assessments',
+      { method: 'POST', body: JSON.stringify({ patientId: patient.id, medicationIds }) },
+      AssessmentResultSchema,
+    )
   }
 
   if (options.simulateError) {

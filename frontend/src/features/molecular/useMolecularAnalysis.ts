@@ -2,11 +2,13 @@ import { useCallback, useState } from 'react'
 import type { MolecularAnalysisResponse, RequestState } from '../../types'
 import { analyzeMolecule } from './api'
 import { isApiError } from '../../api/client'
+import { ContractError } from '../../contracts/validate'
 
 export function useMolecularAnalysis() {
   const [state, setState] = useState<RequestState>('idle')
   const [result, setResult] = useState<MolecularAnalysisResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [contractErrorPath, setContractErrorPath] = useState<string | null>(null)
 
   const analyze = useCallback(async (smiles: string) => {
     const trimmed = smiles.trim()
@@ -23,16 +25,23 @@ export function useMolecularAnalysis() {
 
     setState('loading')
     setErrorMessage(null)
+    setContractErrorPath(null)
     try {
       const data = await analyzeMolecule(trimmed)
       setResult(data)
       setState(data.valid ? 'success' : 'unsupported')
     } catch (err) {
-      setState('error')
-      if (isApiError(err)) {
-        setErrorMessage(err.detail ?? err.message)
+      if (err instanceof ContractError) {
+        setState('contract_error')
+        setErrorMessage(err.message)
+        setContractErrorPath(err.path)
       } else {
-        setErrorMessage('Molecular analysis service is unavailable.')
+        setState('error')
+        if (isApiError(err)) {
+          setErrorMessage(err.detail ?? err.message)
+        } else {
+          setErrorMessage('Molecular analysis service is unavailable.')
+        }
       }
     }
   }, [])
@@ -41,7 +50,8 @@ export function useMolecularAnalysis() {
     setState('idle')
     setResult(null)
     setErrorMessage(null)
+    setContractErrorPath(null)
   }, [])
 
-  return { state, result, errorMessage, analyze, reset }
+  return { state, result, errorMessage, contractErrorPath, analyze, reset }
 }

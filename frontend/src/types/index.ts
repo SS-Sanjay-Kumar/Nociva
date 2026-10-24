@@ -208,7 +208,7 @@ export interface MolecularAnalysisRequest {
 // Generic UI / API plumbing
 // ---------------------------------------------------------------------------
 
-export type RequestState = 'idle' | 'loading' | 'success' | 'error' | 'unsupported'
+export type RequestState = 'idle' | 'loading' | 'success' | 'error' | 'unsupported' | 'contract_error'
 
 export interface ApiError {
   message: string

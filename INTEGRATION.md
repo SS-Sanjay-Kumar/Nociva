@@ -340,17 +340,46 @@ safety finding...") and `insufficient_evidence` ("An unresolved result is not
 reassurance...") — see `frontend/src/features/review/copy.ts`. Your backend
 text doesn't need to repeat that framing; the UI guarantees it regardless.
 
+### Single source of truth for this contract
+
+`frontend/src/contracts/review.ts` holds zod schemas for every type above —
+that file, not this document, is authoritative if the two ever disagree.
+Two things are generated from it, not hand-maintained:
+
+- `docs/contracts/review.schema.json` — standard JSON Schema, regenerated
+  with `cd frontend && npm run schema:review` whenever the zod schemas
+  change. Note its `additionalProperties: false` is an artifact of zod's
+  JSON Schema export, not the runtime behaviour: `parseWithSchema` (the
+  actual validator, in `frontend/src/contracts/validate.ts`) strips unknown
+  keys rather than rejecting them, so your backend is free to add fields
+  before the frontend is updated to use them.
+- `docs/contracts/examples/*.json` — one full `AssessmentResult` per
+  evidence status (`association_found.json`, `no_documented_association.json`,
+  `insufficient_evidence.json`), identical in content to the worked examples
+  above but as standalone files you can diff your real responses against.
+  `frontend/src/contracts/review.test.ts` validates both these files and
+  every mock fixture against the schema on every test run, so the two can't
+  silently drift apart.
+
+Every response from `/api/patients`, `/api/medications`, and
+`/api/assessments` is validated against these schemas at the API boundary
+(`apiRequest` in `frontend/src/api/client.ts`) before any component sees it.
+A response that fails validation — a missing required field, a wrong enum
+value — never partially renders; the UI shows a dedicated "Unexpected
+response from service" pane naming the exact failing field path instead.
+Extra fields your backend adds that the frontend doesn't know about yet are
+silently allowed, not an error.
+
 ### Switching Medication Review off mock mode
 
-1. In `frontend/src/features/review/api.ts`, replace the mock-returning
-   bodies of `fetchPatients`, `fetchMedications`, `runAssessment` with
-   `apiRequest<T>(...)` calls (the central client in `frontend/src/api/client.ts`).
-2. Flip `MEDICATION_REVIEW_MOCK_MODE` in `frontend/src/lib/config.ts` to a
-   runtime/env-driven flag instead of a hardcoded `true`.
-3. No other file needs to change — components consume the hook
-   (`useMedicationAssessment`), not the API module directly. The topbar's
-   "Demo fixtures, not a live engine" chip (`frontend/src/components/shell/Topbar.tsx`)
-   automatically switches to "Deterministic engine v0.3" once mock mode is off.
+Set `VITE_REVIEW_MODE=live` (see `frontend/.env.example`) — that's it.
+`frontend/src/lib/config.ts` derives `MEDICATION_REVIEW_MOCK_MODE` from this
+one flag, and `frontend/src/features/review/api.ts` already has the live
+branch implemented (calling the three endpoints above through the
+schema-validated `apiRequest`) alongside the mock branch; no code edit is
+needed on the frontend side once your endpoints exist. The topbar's "Demo
+fixtures, not a live engine" chip (`frontend/src/components/shell/Topbar.tsx`)
+automatically switches to "Deterministic engine v0.3" in live mode.
 
 **Important constraint carried over from Stream 1 design:** the CYP2D6 ML
 classifier's output must never be fed into this deterministic verdict. If

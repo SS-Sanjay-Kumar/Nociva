@@ -98,8 +98,8 @@ Open http://localhost:5173.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:8000` | Base URL the Molecular Explorer's API client calls. |
-| `VITE_FORCE_MOCK` | `false` | Currently unused — Medication Review mock mode is hardcoded on (see `src/lib/config.ts`) because no live contract exists yet. Reserved for when it does. |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Base URL the central API client calls (both features). |
+| `VITE_REVIEW_MODE` | `mock` | `mock` (default) serves typed fixtures for Medication Review; `live` calls `/api/patients`, `/api/medications`, `/api/assessments` per INTEGRATION.md §3. |
 
 ### Frontend checks
 
@@ -126,6 +126,8 @@ npm test        # Vitest + React Testing Library
   mount the Stream 1 router into the teammate's backend, how to switch Medication Review
   off mock mode.
 - [DEMO.md](./DEMO.md) — a 2-minute walkthrough script.
+- `docs/contracts/` — generated JSON Schema and worked examples for the
+  Medication Review contract (source of truth: `frontend/src/contracts/`).
 
 ## Git
 

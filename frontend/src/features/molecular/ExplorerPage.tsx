@@ -11,6 +11,7 @@ import { LimitationsCard } from './components/LimitationsCard'
 import { InvalidSmilesPane } from './components/InvalidSmilesPane'
 import { ServiceUnavailablePane } from './components/ServiceUnavailablePane'
 import { Skeleton } from '../../components/ui/Misc'
+import { ContractErrorPane } from '../../components/ui/ContractErrorPane'
 import { Footer } from '../../components/shell/Footer'
 
 const DEFAULT_SMILES = 'CNCCC(c1ccccc1)Oc1ccc(cc1)C(F)(F)F'
@@ -19,7 +20,7 @@ export function ExplorerPage() {
   const [text, setText] = useState('')
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null)
   const [modelInfoUnavailable, setModelInfoUnavailable] = useState(false)
-  const { state, result, errorMessage, analyze, reset } = useMolecularAnalysis()
+  const { state, result, errorMessage, contractErrorPath, analyze, reset } = useMolecularAnalysis()
 
   useEffect(() => {
     fetchModelInfo()
@@ -47,6 +48,8 @@ export function ExplorerPage() {
         <Skeleton height={260} dashed />
       </div>
     )
+  } else if (state === 'contract_error') {
+    right = <ContractErrorPane path={contractErrorPath ?? '(root)'} message={errorMessage ?? 'Response did not match the expected shape.'} />
   } else if (state === 'error') {
     right = <ServiceUnavailablePane message={errorMessage ?? 'The molecular analysis service did not respond.'} />
   } else if (state === 'unsupported') {

@@ -19,6 +19,7 @@ import { StaleBanner } from './components/StaleBanner'
 import { ExplorerLinkCard } from './components/ExplorerLinkCard'
 import { PKSlot } from './components/PKSlot'
 import { Footer } from '../../components/shell/Footer'
+import { ContractErrorPane } from '../../components/ui/ContractErrorPane'
 
 export function ReviewPage() {
   const [patients, setPatients] = useState<PatientProfile[]>([])
@@ -28,7 +29,7 @@ export function ReviewPage() {
   const [medicationIds, setMedicationIds] = useState<string[]>([])
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
 
-  const { state, result, errorMessage, ranKey, submit, reset } = useMedicationAssessment()
+  const { state, result, errorMessage, contractErrorPath, ranKey, submit, reset } = useMedicationAssessment()
 
   useEffect(() => {
     Promise.all([fetchPatients(), fetchMedications()])
@@ -92,6 +93,8 @@ export function ReviewPage() {
     pane = <LoadingPane />
   } else if (state === 'error') {
     pane = <EnginePane onRetry={() => run(false)} />
+  } else if (state === 'contract_error') {
+    pane = <ContractErrorPane path={contractErrorPath ?? '(root)'} message={errorMessage ?? 'Response did not match the expected shape.'} />
   } else {
     pane = result ? (
       <div className={`flex flex-col gap-4 ${stale ? 'opacity-55' : ''}`}>

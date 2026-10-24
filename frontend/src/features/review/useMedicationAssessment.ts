@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react'
 import type { AssessmentResult, PatientProfile, RequestState } from '../../types'
 import { runAssessment } from './api'
+import { ContractError } from '../../contracts/validate'
 
 export function useMedicationAssessment() {
   const [state, setState] = useState<RequestState>('idle')
   const [result, setResult] = useState<AssessmentResult | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [contractErrorPath, setContractErrorPath] = useState<string | null>(null)
   const [ranKey, setRanKey] = useState<string | null>(null)
 
   const submit = useCallback(
@@ -18,14 +20,21 @@ export function useMedicationAssessment() {
 
       setState('loading')
       setErrorMessage(null)
+      setContractErrorPath(null)
       try {
         const data = await runAssessment(patient, medicationIds, options)
         setResult(data)
         setState('success')
         setRanKey(`${patient.id}|${medicationIds.join(',')}`)
       } catch (err) {
-        setState('error')
-        setErrorMessage(err instanceof Error ? err.message : 'Assessment failed unexpectedly.')
+        if (err instanceof ContractError) {
+          setState('contract_error')
+          setErrorMessage(err.message)
+          setContractErrorPath(err.path)
+        } else {
+          setState('error')
+          setErrorMessage(err instanceof Error ? err.message : 'Assessment failed unexpectedly.')
+        }
       }
     },
     [],
@@ -35,8 +44,9 @@ export function useMedicationAssessment() {
     setState('idle')
     setResult(null)
     setErrorMessage(null)
+    setContractErrorPath(null)
     setRanKey(null)
   }, [])
 
-  return { state, result, errorMessage, ranKey, submit, reset }
+  return { state, result, errorMessage, contractErrorPath, ranKey, submit, reset }
 }

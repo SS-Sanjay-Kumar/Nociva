@@ -1,13 +1,19 @@
+import type { ZodType } from 'zod'
 import { API_BASE_URL, REQUEST_TIMEOUT_MS } from '../lib/config'
 import type { ApiError } from '../types'
+import { parseWithSchema } from '../contracts/validate'
 
 /**
  * Central API client. All backend calls go through here so there is a
- * single place to adjust base URL, headers, error shaping, and timeouts.
+ * single place to adjust base URL, headers, error shaping, timeouts, and
+ * runtime contract validation. Pass `schema` to validate the response at
+ * this one boundary — every caller gets the same ContractError behaviour
+ * for free instead of each feature re-implementing it.
  */
 export async function apiRequest<TResponse>(
   path: string,
   options: RequestInit = {},
+  schema?: ZodType<TResponse>,
 ): Promise<TResponse> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
@@ -38,7 +44,8 @@ export async function apiRequest<TResponse>(
       throw error
     }
 
-    return (await response.json()) as TResponse
+    const data: unknown = await response.json()
+    return schema ? parseWithSchema(schema, data, path) : (data as TResponse)
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       const error: ApiError = {
