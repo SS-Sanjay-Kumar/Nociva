@@ -1,4 +1,4 @@
-import { Check, FlaskConical, Lock, TriangleAlert } from 'lucide-react'
+import { Check, Database, FlaskConical, Lock, TriangleAlert } from 'lucide-react'
 import { CardHeader, CardSub, CardTitle } from '../../../components/ui/Card'
 import { Chip } from '../../../components/ui/Chip'
 import type { ModelInfo, MolecularAnalysisResponse } from '../../../types'
@@ -64,6 +64,11 @@ export function MlPredictionCard({ result, modelInfo }: { result: MolecularAnaly
             <Chip variant={low ? 'amber' : 'teal'} icon={low ? <TriangleAlert size={13} /> : <Check size={13} />}>
               {low ? 'Low similarity to training data (heuristic, not a confidence interval)' : 'Similar to training data'}
             </Chip>
+            {result.inTrainingSet && (
+              <Chip variant="amber" icon={<Database size={13} />}>
+                Query is in the training data. The score reflects memorisation, not generalisation.
+              </Chip>
+            )}
           </div>
           <p className="text-[12.5px] text-ink-3">
             This score describes activity in a laboratory assay, not what happens in a patient. It has not

@@ -50,6 +50,25 @@ def test_analyze_below_reporting_threshold_returns_empty_neighbors_with_max_simi
     assert body["neighbors"] == []
     assert body["maxSimilarity"] is not None
     assert body["maxSimilarity"] < body["provenance"]["reportingThreshold"]
+    assert body["inTrainingSet"] is False
+
+
+def test_analyze_flags_exact_training_set_member():
+    # This exact canonical SMILES is reference-index entry CYP2D6_Veith#0.
+    training_smiles = "O=C(O)c1c2c(c(O)c3c1CN(C1CCCCC1)CO3)OCN(C1CCCCC1)C2"
+    r = client.post("/api/molecular/analyze", json={"smiles": training_smiles})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["valid"] is True
+    assert body["inTrainingSet"] is True
+    assert body["maxSimilarity"] == 1.0
+
+
+def test_analyze_aspirin_is_not_flagged_as_training_set_member():
+    r = client.post("/api/molecular/analyze", json={"smiles": "CC(=O)Oc1ccccc1C(=O)O"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["inTrainingSet"] is False
 
 
 def test_analyze_invalid_smiles():

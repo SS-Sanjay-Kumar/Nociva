@@ -82,4 +82,14 @@ describe('MlPredictionCard', () => {
     render(<MlPredictionCard result={flagged} modelInfo={trainedModelInfo} />)
     expect(screen.getByText(/low similarity to training data \(heuristic, not a confidence interval\)/i)).toBeInTheDocument()
   })
+
+  it('shows the training-set-membership chip when inTrainingSet is true', () => {
+    render(<MlPredictionCard result={{ ...baseResult, inTrainingSet: true }} modelInfo={trainedModelInfo} />)
+    expect(screen.getByText(/query is in the training data/i)).toBeInTheDocument()
+  })
+
+  it('does not show the training-set-membership chip when inTrainingSet is false', () => {
+    render(<MlPredictionCard result={{ ...baseResult, inTrainingSet: false }} modelInfo={trainedModelInfo} />)
+    expect(screen.queryByText(/query is in the training data/i)).not.toBeInTheDocument()
+  })
 })

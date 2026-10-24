@@ -182,6 +182,8 @@ export interface MolecularAnalysisResponse {
   neighbors: SimilarityNeighbor[]
   /** Highest Tanimoto similarity found, even if below reportingThreshold and so excluded from `neighbors`. */
   maxSimilarity?: number | null
+  /** True when the query is (near-)identical to a compound the classifier was trained on. */
+  inTrainingSet?: boolean
   cyp2d6: {
     modelTrained: boolean
     prediction?: Cyp2d6Prediction

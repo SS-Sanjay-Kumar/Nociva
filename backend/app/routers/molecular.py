@@ -94,6 +94,7 @@ def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeRespon
         else []
     )
     neighbors = [SimilarityNeighbor(**n) for n in reported_neighbor_dicts]
+    in_training_set = similarity.is_in_training_set(canonical, max_similarity)
 
     cyp2d6_prediction_dict = classifier.predict(query_fp) if classifier.model_trained() else None
     cyp2d6 = Cyp2d6Result(
@@ -110,6 +111,7 @@ def analyze_molecule(payload: MolecularAnalyzeRequest) -> MolecularAnalyzeRespon
         molecularWeight=round(Descriptors.MolWt(mol), 2),
         neighbors=neighbors,
         maxSimilarity=max_similarity,
+        inTrainingSet=in_training_set,
         cyp2d6=cyp2d6,
         provenance=_provenance(),
         limitations=BASE_LIMITATIONS,

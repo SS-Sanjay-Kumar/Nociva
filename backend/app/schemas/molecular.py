@@ -53,6 +53,10 @@ class MolecularAnalyzeResponse(BaseModel):
     # Highest Tanimoto similarity found among reference compounds, even if
     # below reportingThreshold and therefore not included in `neighbors`.
     maxSimilarity: float | None = None
+    # True when the query is (near-)identical to a compound the CYP2D6
+    # classifier was trained on — the ML score reflects memorisation of
+    # that exact compound, not generalisation to new structures.
+    inTrainingSet: bool = False
     cyp2d6: Cyp2d6Result
     provenance: Provenance
     limitations: list[str] = []
