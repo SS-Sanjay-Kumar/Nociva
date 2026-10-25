@@ -14,7 +14,7 @@ The review engine returns one of three verdicts and never a score or a risk leve
 - **PK Simulator:** a closed-form one-compartment oral model with optional Monte Carlo variability (`app/services/pk/`), served at `/api/pk/*` and charted with Recharts. It uses synthetic compounds and user-supplied numbers, is not connected to any verdict, and is not clinically validated.
 - **Supabase:** accessed read-only with SELECT queries only, using a publishable key; the client refuses `sb_secret` and `service_role` keys unless `ALLOW_PRIVILEGED_KEY=1` is set.
 - **Backend:** one FastAPI app (`app/main.py`) shared with the team's original engine, which the UI does not use.
-- **Tests:** `tests/` (pytest, no network or database) and `frontend/` (vitest).
+- **Tests:** `tests/` (110 pytest tests, no network or database) and `frontend/` (119 vitest tests in 18 files, plus oxlint and a type-checked build).
 
 The Molecular Explorer and the PK Simulator need no `.env`: without `SUPABASE_*` the backend still starts, logs "Supabase-backed routes disabled: .env missing", and serves `/api/molecular/*` and `/api/pk/*` only. The Medication Review live mode needs the `.env`.
 
