@@ -104,16 +104,23 @@ p {
   margin: 0;
 }
 
-button {
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
+/*
+ * In @layer base so Tailwind utilities (e.g. text-white on a primary Button)
+ * win. Unlayered, `color: inherit` here overrode them and rendered the
+ * primary button label navy-on-navy.
+ */
+@layer base {
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
 
-input,
-textarea {
-  font: inherit;
-  color: inherit;
+  input,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
 }
 
 :focus-visible {
