@@ -1,7 +1,7 @@
-import type { AssessmentResult, Medication, PatientProfile } from '../../types'
+import type { AssessmentResult, GeneInfo, Medication, PatientProfile } from '../../types'
 import { MOCK_PATIENTS } from './mocks/patients'
 import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
-import { fetchLiveMedications, runLiveAssessment } from './liveApi'
+import { fetchLiveGenes, fetchLiveMedications, runLiveAssessment } from './liveApi'
 
 /**
  * Medication Review API adapter, switched by VITE_REVIEW_MODE (lib/config.ts).
@@ -24,6 +24,11 @@ export async function fetchMedications(query = '', signal?: AbortSignal): Promis
     return fetchMockMedications(query)
   }
   return fetchLiveMedications(query, signal)
+}
+
+/** Live only: supported genes backed by guideline rows. Mock mode never edits profiles, so it never asks. */
+export async function fetchGenes(): Promise<GeneInfo[]> {
+  return fetchLiveGenes()
 }
 
 /** Runs one assessment for the whole selected medication list. */

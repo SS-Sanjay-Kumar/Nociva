@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { AssessmentResultSchema } from './review'
+import { AssessmentResultSchema, GeneListSchema } from './review'
+import genesExample from '../../../docs/contracts/genes-examples/genes.json'
 import { parseWithSchema, ContractError } from './validate'
 import { MOCK_PATIENTS } from '../features/review/mocks/patients'
 import { MOCK_MEDICATIONS } from '../features/review/mocks/medications'
@@ -84,5 +85,11 @@ describe('mock fixtures validate against the schema', () => {
       isMock: true,
     }
     expect(() => parseWithSchema(AssessmentResultSchema, result, scenario.id)).not.toThrow()
+  })
+})
+
+describe('GET /review/genes example', () => {
+  it('matches GeneListSchema', () => {
+    expect(() => parseWithSchema(GeneListSchema, genesExample, 'genes.json')).not.toThrow()
   })
 })

@@ -182,6 +182,18 @@ class ReviewEngine:
             ordered = sorted(names)
         return [{"id": n, "name": title_case(n)} for n in ordered[:limit]]
 
+    def list_genes(self) -> List[Dict[str, Any]]:
+        """Supported genes with at least one recommendation-true guideline row."""
+        rows = [r for r in self._rules_repo.get_rules() if any(g.upper() in SUPPORTED_GENES for g in r["genes"])]
+        raw = self._rules_repo.get_raw_json([r["guideline_id"] for r in rows])
+        counts: Dict[str, int] = {}
+        for r in rows:
+            if _parse_raw(raw.get(r["guideline_id"]))["recommendation"] is not True:
+                continue
+            for gene in {g.upper() for g in r["genes"] if g.upper() in SUPPORTED_GENES}:
+                counts[gene] = counts.get(gene, 0) + 1
+        return [{"gene": g, "guidelineCount": counts[g]} for g in sorted(counts)]
+
     # ---- assessment --------------------------------------------------------
 
     def assess(self, request: AssessRequest) -> Dict[str, Any]:

@@ -99,3 +99,8 @@ class AssessmentResult(BaseModel):
 class MedicationSuggestion(BaseModel):
     id: str
     name: str
+
+
+class GeneOut(BaseModel):
+    gene: str
+    guidelineCount: int

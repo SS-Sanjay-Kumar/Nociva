@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Genotype, Medication, PatientProfile } from '../../types'
-import { fetchMedications, fetchPatients } from './api'
+import { fetchGenes, fetchMedications, fetchPatients } from './api'
+import { ContractError } from '../../contracts/validate'
 import { liveMedication } from './liveApi'
 import { useMedicationSearch } from './useMedicationSearch'
 import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
@@ -20,7 +21,7 @@ import { MechanismCard } from './components/MechanismCard'
 import { EvidenceCard } from './components/EvidenceCard'
 import { LimitsCard } from './components/LimitsCard'
 import { ProfileEditor } from './components/ProfileEditor'
-import { PROFILE_COPY, draftFromPatient, genotypesKey } from './profileEdit'
+import { EDITABLE_GENES, PROFILE_COPY, draftFromPatient, genotypesKey } from './profileEdit'
 import { StaleBanner } from './components/StaleBanner'
 import { ExplorerLinkCard } from './components/ExplorerLinkCard'
 import { PkLinkCard } from './components/PkLinkCard'
@@ -42,9 +43,23 @@ export function ReviewPage() {
   const [medicationIds, setMedicationIds] = useState<string[]>([])
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
   // In-memory edits to the selected patient's genotypes; null means the preset is in use.
+  const [genes, setGenes] = useState<string[]>([...EDITABLE_GENES])
+  const [genesNotice, setGenesNotice] = useState<string | null>(null)
+  const [genesContractError, setGenesContractError] = useState<{ path: string; message: string } | null>(null)
   const [draft, setDraft] = useState<Genotype[] | null>(null)
 
   const { state, result, errorMessage, contractErrorPath, ranKey, submit, reset } = useMedicationAssessment()
+
+  useEffect(() => {
+    if (!live) return
+    fetchGenes()
+      .then((list) => setGenes(list.map((g) => g.gene)))
+      .catch((err: unknown) => {
+        if (err instanceof ContractError) setGenesContractError({ path: err.path, message: err.message })
+        else setGenesNotice(PROFILE_COPY.genesFailed)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     // Live mode must not hide a dead service: patients still load, the medication list reports the failure.
@@ -80,7 +95,11 @@ export function ReviewPage() {
 
   const editGene = (gene: string, patch: Partial<Genotype>) => {
     if (!preset) return
-    setDraft((prev) => (prev ?? draftFromPatient(preset)).map((g) => (g.gene === gene ? { ...g, ...patch } : g)))
+    setDraft((prev) => {
+      const next = (prev ?? draftFromPatient(preset, genes)).map((g) => (g.gene === gene ? { ...g, ...patch } : g))
+      // Setting everything back to the preset values is not an edit.
+      return genotypesKey(next) === genotypesKey(draftFromPatient(preset, genes)) ? null : next
+    })
   }
   const stale = state === 'success' && ranKey !== null && currentKey !== ranKey
 
@@ -176,13 +195,24 @@ export function ReviewPage() {
         <div className="flex flex-col gap-4">
           <PatientCard patients={patients} selectedId={patient.id} onPick={pickPatient} />
           <GeneticsCard patient={patient}>
-            {live ? (
+            {live && genesContractError ? (
+              <ContractErrorPane path={genesContractError.path} message={genesContractError.message} />
+            ) : live ? (
+              <>
+                {genesNotice && (
+                  <p role="status" className="px-4 pb-2 text-[12.5px] text-crit-700">
+                    {genesNotice}. Showing the built-in supported genes.
+                  </p>
+                )}
               <ProfileEditor
-                genotypes={draft ?? draftFromPatient(preset!)}
+                genes={genes}
+                preset={preset!.genotypes}
+                genotypes={draft ?? draftFromPatient(preset!, genes)}
                 edited={draft !== null}
                 onChange={editGene}
                 onReset={() => setDraft(null)}
               />
+              </>
             ) : (
               <p className="px-4 pb-2 text-[12.5px] text-ink-3">{PROFILE_COPY.mockDisabled}</p>
             )}

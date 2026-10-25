@@ -2,18 +2,24 @@ import { useState } from 'react'
 import type { Genotype, Phenotype } from '../../../types'
 import { Fine } from '../../../components/ui/Misc'
 import { Button } from '../../../components/ui/Button'
-import { DIPLOTYPE_MAX, DIPLOTYPE_PATTERN, PHENOTYPES_BY_GENE, PROFILE_COPY, phenotypeText } from '../profileEdit'
+import { DIPLOTYPE_MAX, DIPLOTYPE_PATTERN, PROFILE_COPY, phenotypeOptions } from '../profileEdit'
 
 const FIELD =
   'w-full rounded-lg border border-line bg-surface px-2 py-1.5 text-[13.5px] text-ink focus-visible:outline-2 focus-visible:outline-teal-600'
 
 export function ProfileEditor({
   genotypes,
+  genes,
+  preset,
   edited,
   onChange,
   onReset,
 }: {
   genotypes: Genotype[]
+  /** Genes to render, one row each (from the genes endpoint, or the built-in fallback). */
+  genes: readonly string[]
+  /** The patient's preset genotypes, used for the "Preset: ..." option. */
+  preset: Genotype[]
   edited: boolean
   onChange: (gene: string, patch: Partial<Genotype>) => void
   onReset: () => void
@@ -30,7 +36,8 @@ export function ProfileEditor({
           </Button>
         )}
       </div>
-      {genotypes.map((g) => {
+      {genes.map((gene) => {
+        const g = genotypes.find((x) => x.gene === gene) ?? { gene, missing: true }
         const id = `profile-${g.gene}`
         return (
           <fieldset key={g.gene} className="flex flex-col gap-2 rounded-[10px] border border-line p-3">
@@ -50,10 +57,9 @@ export function ProfileEditor({
                   )
                 }
               >
-                <option value="">Not tested</option>
-                {PHENOTYPES_BY_GENE[g.gene].map((p) => (
-                  <option key={p} value={p}>
-                    {phenotypeText(p)}
+                {phenotypeOptions(g.gene, preset.find((x) => x.gene === g.gene)).map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
                   </option>
                 ))}
               </select>

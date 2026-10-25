@@ -20,6 +20,7 @@ export const PhenotypeSchema = z.enum([
   'rapid_metabolizer',
   'ultrarapid_metabolizer',
   'non_expresser',
+  'intermediate_expresser',
   'indeterminate',
 ])
 
@@ -122,3 +123,9 @@ export const AssessmentResultSchema = z.object({
 
 export const PatientListSchema = z.array(PatientProfileSchema)
 export const MedicationListSchema = z.array(MedicationSchema)
+
+export const GeneInfoSchema = z.object({
+  gene: z.string(),
+  guidelineCount: z.number().int().nonnegative(),
+})
+export const GeneListSchema = z.array(GeneInfoSchema)

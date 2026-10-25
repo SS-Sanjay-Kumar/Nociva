@@ -8,19 +8,22 @@ import { toAssessRequest, liveMedication } from '../liveApi'
 import { MOCK_PATIENTS } from '../mocks/patients'
 import type { Genotype } from '../../../types'
 
+const GENES = ['CYP2C19', 'CYP2C9', 'CYP2D6', 'CYP3A5']
 const patientC = MOCK_PATIENTS.find((p) => p.id === 'patient-c')!
 const meds = [liveMedication('clopidogrel'), liveMedication('omeprazole')]
 
 /** Stateful harness mirroring ReviewPage: preset until edited. */
 function Harness({ onDraft }: { onDraft?: (g: Genotype[]) => void }) {
   const [draft, setDraft] = React.useState<Genotype[] | null>(null)
-  const current = draft ?? draftFromPatient(patientC)
+  const current = draft ?? draftFromPatient(patientC, GENES)
   onDraft?.(current)
   return (
     <ProfileEditor
       genotypes={current}
+      genes={GENES}
+      preset={patientC.genotypes}
       edited={draft !== null}
-      onChange={(gene, patch) => setDraft((prev) => (prev ?? draftFromPatient(patientC)).map((g) => (g.gene === gene ? { ...g, ...patch } : g)))}
+      onChange={(gene, patch) => setDraft((prev) => (prev ?? draftFromPatient(patientC, GENES)).map((g) => (g.gene === gene ? { ...g, ...patch } : g)))}
       onReset={() => setDraft(null)}
     />
   )
@@ -47,10 +50,21 @@ describe('ProfileEditor', () => {
     expect(payload(g).map((x) => x.gene)).toEqual(['CYP2D6'])
   })
 
-  it('lists Not tested first', () => {
+  const labels = (name: string) => within(screen.getByLabelText(name)).getAllByRole('option').map((o) => o.textContent)
+
+  it('offers exactly Not tested, intermediate, and a differing preset', () => {
     render(<Harness />)
-    const opts = within(screen.getByLabelText('CYP2C19 phenotype')).getAllByRole('option')
-    expect(opts[0]).toHaveTextContent('Not tested')
+    expect(labels('CYP2C19 phenotype')).toEqual(['Not tested', 'intermediate metabolizer'])
+    expect(labels('CYP2C9 phenotype')).toEqual(['Not tested', 'intermediate metabolizer'])
+    expect(labels('CYP2D6 phenotype')).toEqual(['Not tested', 'intermediate metabolizer', 'Preset: normal metabolizer'])
+    expect(labels('CYP3A5 phenotype')).toEqual(['Not tested', 'intermediate expresser'])
+  })
+
+  it('changing a gene to intermediate puts the exact string in the payload', async () => {
+    let g: Genotype[] = []
+    render(<Harness onDraft={(d) => (g = d)} />)
+    await userEvent.selectOptions(screen.getByLabelText('CYP3A5 phenotype'), 'intermediate_expresser')
+    expect(payload(g).find((x) => x.gene === 'CYP3A5')?.phenotype).toBe('intermediate_expresser')
   })
 
   it('rejects bad diplotype characters', () => {
@@ -65,11 +79,11 @@ describe('ProfileEditor', () => {
 
   it('reset restores the preset', async () => {
     render(<Harness />)
-    const select = screen.getByLabelText('CYP2C9 phenotype')
-    expect(select).toHaveValue('intermediate_metabolizer')
-    await userEvent.selectOptions(select, 'poor_metabolizer')
+    const select = screen.getByLabelText('CYP2D6 phenotype')
+    expect(select).toHaveValue('normal_metabolizer')
+    await userEvent.selectOptions(select, 'intermediate_metabolizer')
     await userEvent.click(screen.getByRole('button', { name: 'Reset to preset' }))
-    expect(screen.getByLabelText('CYP2C9 phenotype')).toHaveValue('intermediate_metabolizer')
+    expect(screen.getByLabelText('CYP2D6 phenotype')).toHaveValue('normal_metabolizer')
     expect(screen.queryByText('Custom profile (edited)')).toBeNull()
   })
 

@@ -8,7 +8,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.models.review import AssessmentResult, AssessRequest, MedicationSuggestion
+from app.models.review import AssessmentResult, AssessRequest, GeneOut, MedicationSuggestion
 from app.services.review_engine import ReviewEngine
 
 router = APIRouter()
@@ -47,3 +47,8 @@ def assess(request: AssessRequest, engine: ReviewEngine = Depends(engine_depende
 @router.get("/medications", response_model=List[MedicationSuggestion])
 def medications(query: str = Query("", max_length=100), engine: ReviewEngine = Depends(engine_dependency)):
     return engine.search_medications(query)
+
+
+@router.get("/genes", response_model=List[GeneOut])
+def genes(engine: ReviewEngine = Depends(engine_dependency)):
+    return engine.list_genes()

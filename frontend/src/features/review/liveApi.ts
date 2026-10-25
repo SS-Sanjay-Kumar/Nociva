@@ -1,6 +1,6 @@
-import type { AssessmentResult, Medication, PatientProfile } from '../../types'
+import type { AssessmentResult, GeneInfo, Medication, PatientProfile } from '../../types'
 import { apiRequest, isApiError } from '../../api/client'
-import { AssessmentResultSchema, MedicationListSchema } from '../../contracts/review'
+import { AssessmentResultSchema, GeneListSchema, MedicationListSchema } from '../../contracts/review'
 
 /**
  * Live Medication Review adapter: GET /api/v1/review/medications and
@@ -64,6 +64,14 @@ export async function fetchLiveMedications(query = '', signal?: AbortSignal): Pr
       { signal },
       MedicationListSchema,
     )
+  } catch (err) {
+    throw plainNetworkError(err)
+  }
+}
+
+export async function fetchLiveGenes(): Promise<GeneInfo[]> {
+  try {
+    return await apiRequest<GeneInfo[]>('/api/v1/review/genes', {}, GeneListSchema)
   } catch (err) {
     throw plainNetworkError(err)
   }

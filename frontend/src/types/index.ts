@@ -17,6 +17,7 @@ export type Phenotype =
   | 'rapid_metabolizer'
   | 'ultrarapid_metabolizer'
   | 'non_expresser'
+  | 'intermediate_expresser'
   | 'indeterminate'
 
 export interface Genotype {
@@ -238,4 +239,10 @@ export interface ApiError {
   status?: number
   /** True when the request never reached the server (connection refused, DNS, offline). */
   network?: boolean
+}
+
+/** One supported gene with at least one recommendation-true guideline row (GET /api/v1/review/genes). */
+export interface GeneInfo {
+  gene: string
+  guidelineCount: number
 }
