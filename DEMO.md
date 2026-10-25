@@ -84,3 +84,42 @@ experimental, and it never changes the Medication Review verdict."*
 - *"No documented association is not a safety finding."*
 - *"Experimental, and it never changes the clinical verdict."*
 - *"This predicts an assay, not a patient."*
+
+
+## Live demo script (≈3 minutes, live mode)
+
+Run `./scripts/dev.sh` (needs `SUPABASE_URL` and `SUPABASE_KEY` in the
+repo-root `.env`). The topbar chip reads "Guideline engine v1.0 · demo
+inhibitor list". Every verdict below is computed by the guideline engine
+from ClinPGx annotations; patients are synthetic.
+
+**1. Scenario A: Association found (≈50 s).** Click "Association found".
+Patient A (CYP2D6 *1/*4, intermediate) + paroxetine + tamoxifen.
+- Point at the amber verdict, the mechanism flow, and "Matched associations"
+  (`GG-CYP2D6-TAMOXIFEN`, `GDD-CYP2D6-PAROXETINE-TAMOXIFEN`).
+- Point at the evidence cards: source, annotation version and date, and the
+  quoted guideline text ("Show full text").
+- *Honest limit:* the paroxetine inhibitor link comes from a demo inhibitor
+  list, not a clinical source; only the quoted DPWG text is cited for it.
+
+**2. Scenario B: No documented association (≈40 s).** Click "No documented
+association". Patient B (CYP2D6 and CYP2C9 normal) + metoprolol + warfarin.
+- Read the callout: *"This is not a safety finding."* The engine found
+  nothing to report; that is not evidence the combination is safe.
+- *Honest limit:* warfarin dosing also involves VKORC1 and CYP4F2, which
+  this tool does not evaluate (it is listed under limitations), and
+  normal-metabolizer recommendations are not evaluated.
+
+**3. Scenario C: Insufficient evidence (≈40 s).** Click "Insufficient
+evidence". Patient C (no CYP2C19 result) + clopidogrel + omeprazole.
+- Point at "Missing data": CYP2C19 is untested, so the engine refuses to
+  assume normal. *An unresolved result is not reassurance.*
+- *Honest limit:* guideline text is quoted, not interpreted; the engine
+  gives no dosing or prescribing advice.
+
+**4. Molecular Explorer (≈50 s).** Open "Molecular explorer" and run the
+default structure. It is experimental, separate from the verdict, and never
+feeds it.
+- *Honest limit:* the CYP2D6 classifier is a research model on public
+  data; the demo patients and all outputs are synthetic and not for clinical
+  decisions.
