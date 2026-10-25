@@ -37,19 +37,25 @@ files is explicitly permitted).
 
 ## Backend (`requirements.txt`)
 
+Versions are the pins in the merged root `requirements.txt`, read from
+installed package metadata (`importlib.metadata`).
+
 Runtime (shipped in the running service):
 
 | Package | Version | License |
 |---|---|---|
-| `fastapi` | 0.162.0 | MIT |
-| `uvicorn` | 0.54.0 | BSD-3-Clause |
+| `fastapi` | 0.110.0 | MIT |
+| `uvicorn` | 0.28.0 | BSD-3-Clause |
+| `pydantic` | 2.6.4 | MIT |
+| `pydantic-settings` | 2.2.1 | MIT |
+| `supabase` | 2.3.4 | MIT |
+| `python-dotenv` | 1.0.1 | BSD-3-Clause |
 | `rdkit` | 2026.3.5 | BSD-3-Clause |
 | `scikit-learn` | 1.9.1 | BSD-3-Clause |
 | `scikit-fingerprints` | 2.1.0 | MIT |
 | `pandas` | 3.1.0 | BSD-3-Clause |
 | `numpy` | 2.5.4 | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 (bundled components) |
 | `joblib` | 1.6.0 | BSD-3-Clause |
-| `pydantic` | 2.14.1 | MIT |
 | `requests` | 2.34.2 | Apache-2.0 |
 | `python-multipart` | 0.0.32 | Apache-2.0 |
 
@@ -58,11 +64,18 @@ Dev/test only (not shipped in the running service):
 | Package | Version | License |
 |---|---|---|
 | `pytest` | 9.1.1 | MIT |
-| `httpx` | 0.28.1 | BSD-3-Clause |
+| `httpx` | 0.25.2 | BSD-3-Clause |
 
-## Dataset
+## Data
 
-Not software, listed here for completeness since it's bundled into the
-shipped model artifacts: **TDC CYP2D6_Veith** (Veith et al., *Nature
-Biotechnology* 2009), via Therapeutics Data Commons, licensed **CC BY 4.0**.
-See README.md "Dataset & licensing" for full attribution.
+Not software, listed here for completeness.
+
+- **TDC CYP2D6_Veith** (Veith et al., *Nature Biotechnology* 2009), via
+  Therapeutics Data Commons, licensed **CC BY 4.0**. The Molecular Explorer
+  model and reference index are generated from it locally (`ml/`) and are
+  not committed.
+- **ClinPGx (formerly PharmGKB) guideline annotations and relationships**,
+  stored in the project's Supabase tables (`guideline_rules`,
+  `entity_relationships`) and quoted by the review engine with source,
+  version and date. Licence terms were not verified in this session: check
+  ClinPGx's current terms before redistributing guideline text.
