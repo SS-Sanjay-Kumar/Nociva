@@ -115,3 +115,18 @@ Response Structure:
 }
 ```
 
+---
+
+## Frontend and Stream 1
+
+- `frontend/` is the React + Vite UI (`npm install && npm run dev` inside it).
+- Stream 1 (Molecular Intelligence Engine) lives in this app layout:
+  router `app/api/v1/endpoints/molecular.py`, services `app/services/molecular/`,
+  schemas `app/models/molecular.py`, ML scripts `ml/`, tests `tests/`.
+  Its endpoints are `POST /api/molecular/analyze` and `GET /api/molecular/model-info`.
+- Model artifacts are gitignored under `models/molecular/`. Generate them with
+  `./scripts/setup.sh` (or `python ml/train_cyp2d6_model.py` then
+  `python ml/build_reference_index.py`).
+- `./scripts/dev.sh` runs uvicorn (`app.main:app`) and Vite together.
+- Run the Stream 1 tests with `pytest tests/` (they do not need Supabase).
+- See `INTEGRATION.md` for details.

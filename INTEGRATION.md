@@ -4,70 +4,48 @@ This document is for whoever owns the shared FastAPI backend and Supabase
 database, and for connecting the frontend to the real Medication Review
 backend contract once it exists.
 
-## 1. Mounting the Stream 1 router into the real app
+## 1. Stream 1 inside the shared app layout
 
-`backend/app/main.py` on this branch is a **minimal scaffold** created only
-because no backend file existed yet when Stream 1 started. It is not a
-competing backend — it exists to make Stream 1 runnable in isolation.
+Stream 1 now lives inside the shared FastAPI app (repo-root `app/`), with
+one `requirements.txt` at the repo root. There is no separate `backend/`.
 
-If you already have (or are building) `backend/app/main.py` with Supabase
-wiring, routes, etc., do **not** let this branch overwrite it. Instead, pull
-in two things from this branch:
+| Piece | Path |
+|---|---|
+| Router (`/api/molecular/...`) | `app/api/v1/endpoints/molecular.py` |
+| Services (features, classifier, similarity) | `app/services/molecular/` |
+| Pydantic schemas | `app/models/molecular.py` |
+| Training / index scripts | `ml/` |
+| Model artifacts (gitignored) | `models/molecular/` |
+| Tests | `tests/` |
 
-1. `backend/app/routers/molecular.py` and everything under
-   `backend/app/services/molecular/` and `backend/app/schemas/molecular.py` —
-   fully self-contained, no shared-state dependencies.
-2. One include line in your `main.py`:
+`app/main.py` includes the router directly with
+`app.include_router(molecular_router)`. The router declares its own
+`/api/molecular` prefix, so it is **not** mounted under `api_router`
+(which would put it at `/api/v1/api/molecular/...` and break the frontend).
+Public URLs are `POST /api/molecular/analyze` and
+`GET /api/molecular/model-info`.
 
-```python
-from app.routers.molecular import router as molecular_router
-app.include_router(molecular_router)
-```
+The molecular router:
+- Does not import or touch Supabase, `app.core`, or any other router.
+- Reads its artifacts from `models/molecular/`, produced from the repo root
+  with the venv active: `python ml/train_cyp2d6_model.py` then
+  `python ml/build_reference_index.py` (or run `scripts/setup.sh`). If the
+  artifacts are missing it degrades gracefully: `model-info` returns
+  `trained: false`, and `analyze` still validates/canonicalises/draws
+  structures without a prediction or neighbours.
+- Uses the packages pinned in the root `requirements.txt`.
+- Needs CORS to allow local frontend origins; `app/main.py` allows any
+  `http://localhost:<port>` / `http://127.0.0.1:<port>` via
+  `allow_origin_regex`.
 
-That's the entire integration surface. The molecular router:
-- Does not import or touch Supabase, your database connections, or any
-  other router's state.
-- Reads its own artifacts from `backend/models/` at your repo root — not
-  under `app/` — produced by running, from your repo root with your venv
-  active: `python ml/train_cyp2d6_model.py` then `python
-  ml/build_reference_index.py` (copy `backend/ml/` over too; it's not part
-  of the router but it's what generates the artifacts the router reads). If
-  the artifacts aren't there yet, the router degrades gracefully —
-  `GET /api/molecular/model-info` returns `trained: false`, `analyze` still
-  validates/canonicalises/draws structures, just without a classifier
-  prediction or similarity neighbours — rather than erroring.
-- Needs these Python packages installed: `fastapi`, `rdkit`, `scikit-learn`,
-  `scikit-fingerprints`, `pandas`, `numpy`, `joblib`, `pydantic`. See
-  `backend/requirements.txt` for exact pinned versions (not enumerated here
-  so this document doesn't drift from it).
-- Only needs CORS to allow the local frontend dev origin
-  (`http://localhost:5173`, or any `localhost`/`127.0.0.1` port — see
-  `backend/app/main.py`'s `allow_origin_regex`) — merge that into your
-  existing `CORSMiddleware` config if you already have one, rather than
-  adding a second middleware. CORS is app-level, so your own policy governs
-  the merged router too; there's no collision to worry about, just make
-  sure your policy actually allows the frontend's origin.
-
-**`GET /health` does NOT travel with this merge** — it's defined directly
-in the scaffold's `backend/app/main.py`, not inside `routers/molecular.py`,
-specifically so it stays a general app-level health check rather than
-something Stream 1-specific. If you copy `backend/tests/` wholesale,
-`test_api.py::test_health` will fail against your own `main.py` unless it
-also exposes `GET /health` (which it almost certainly already does, or
-should, independent of this merge). Verified by actually doing this merge
-into a standalone throwaway FastAPI app in this session: 26 of 27 copied
-tests passed unmodified against the fresh app; `test_health` was the only
-failure, for exactly this reason.
-
-If `backend/app/main.py` already exists with different content by the time
-this merges, **do not overwrite it** — apply only the two additions above as
-a patch.
+`tests/test_api.py` builds its own tiny FastAPI app containing only the
+molecular router, so the tests never import `app.main`, settings or the
+database. `GET /health` belongs to `app/main.py` and is not tested there.
 
 ## 2. Stream 1 API contract (implemented, live)
 
 ### `GET /health`
-Scaffold-only — defined in `backend/app/main.py`, not in the molecular
-router. Does not travel with the §1 merge; see the note there.
+Defined in `app/main.py`, not in the molecular router.
 ```json
 { "status": "ok" }
 ```
@@ -106,7 +84,7 @@ http://localhost:8000/api/molecular/model-info`):
 }
 ```
 
-When the model hasn't been trained yet (no `backend/models/*.joblib`),
+When the model hasn't been trained yet (no `models/molecular/*.joblib`),
 `trained` is `false`, `metrics` is `null`, and `splitMethod`/`randomSeed` are
 omitted — the frontend shows "Model not trained yet" with the training
 command instead of fabricating numbers.
@@ -183,7 +161,7 @@ Field notes:
   closest was 0.12" instead of just going blank.
 - `provenance.referenceSetSize` **always equals `model-info`'s
   `metrics.nTrain`** (`10504` as of the last training run) — the reference
-  index (`backend/ml/build_reference_index.py`) is built from the
+  index (`ml/build_reference_index.py`) is built from the
   classifier's own scaffold-split training set, not a separate sample, so
   `inTrainingSet` and the "Similar to training data" chip mean exactly what
   they say. Enforced by a backend test
@@ -420,19 +398,18 @@ logic.
 
 Nothing in this branch touches Supabase — no schema changes, no credentials,
 no client code. Stream 1's model/index artifacts are flat files under
-`backend/models/` (gitignored, regenerated locally via the two training
-scripts in `backend/ml/`). Keep all privileged Supabase access server-side
+`models/molecular/` (gitignored, regenerated locally via the two training
+scripts in `ml/`). Keep all privileged Supabase access server-side
 in your routes; Stream 1 does not need Supabase access at all.
 
 ## 5. Reproducing the dataset and model locally
 
 ```bash
-cd backend
 source .venv/bin/activate
 python ml/train_cyp2d6_model.py        # downloads TDC CYP2D6_Veith, trains, evaluates
 python ml/build_reference_index.py     # builds the Tanimoto reference index
 ```
 
 Both scripts are idempotent and deterministic (fixed seed = 42). Artifacts
-land in `backend/models/` and are gitignored — regenerate them rather than
+land in `models/molecular/` and are gitignored — regenerate them rather than
 committing the ~44MB of binaries.

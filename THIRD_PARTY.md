@@ -6,7 +6,7 @@ directly — `node -e "require('<pkg>/package.json').license"` for the
 frontend and Python's `importlib.metadata.metadata(<pkg>)['License-Expression']`
 for the backend — rather than installing a license-scanning tool, per the
 "no large installs" constraint. Regenerate by re-running those one-liners
-against `frontend/package.json`'s `dependencies` and `backend/requirements.txt`
+against `frontend/package.json`'s `dependencies` and `requirements.txt`
 if either changes.
 
 All licenses below are OSI-approved open source licenses, **except** the
@@ -35,7 +35,7 @@ a documented flag to confirm, not a settled legal conclusion. It imposes no
 restriction relevant to this project (bundling and redistributing the font
 files is explicitly permitted).
 
-## Backend (`backend/requirements.txt`)
+## Backend (`requirements.txt`)
 
 Runtime (shipped in the running service):
 

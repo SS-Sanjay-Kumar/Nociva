@@ -2,7 +2,7 @@
 
 ## Setup scripts
 
-- `scripts/setup.sh` — creates `backend/.venv`, installs backend and
+- `scripts/setup.sh` — creates `.venv` (repo root), installs backend and
   frontend deps, trains the model and builds the reference index **only if
   those artifacts are missing** (safe to re-run; every step is idempotent).
 - `scripts/dev.sh` — starts backend (`:8000`) and frontend (Vite) together;
@@ -11,7 +11,7 @@
 ## Timing (this machine, Apple Silicon, cold start)
 
 Measured by clearing `~/scikit_learn_data` (the TDC dataset cache) and
-`backend/models/` and timing `scripts/setup.sh` end to end, then timing the
+`models/molecular/` and timing `scripts/setup.sh` end to end, then timing the
 two ML scripts individually with the dataset now cached:
 
 | Step | Wall time |
@@ -46,7 +46,7 @@ from a fixed seed):
    the dataset once. Recommended default: it's already working, it's fast,
    and it sidesteps every artifact-distribution problem below by not
    having one.
-2. **Git LFS for `backend/models/*.joblib`.** Keeps the repo self-contained
+2. **Git LFS for `models/molecular/*.joblib`.** Keeps the repo self-contained
    (clone and go, no training step), but adds LFS as a hard requirement
    for anyone touching the repo, including CI, and 58MB in LFS is a real
    but modest storage/bandwidth cost. Worth it only once the training step
