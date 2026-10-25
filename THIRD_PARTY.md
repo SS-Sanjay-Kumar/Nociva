@@ -56,6 +56,7 @@ Runtime (shipped in the running service):
 | `pandas` | 3.1.0 | BSD-3-Clause |
 | `numpy` | 2.5.4 | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 (bundled components) |
 | `joblib` | 1.6.0 | BSD-3-Clause |
+| `scipy` | 1.18.1 | BSD-3-Clause (see package metadata; also used by the PK tests) |
 | `requests` | 2.34.2 | Apache-2.0 |
 | `python-multipart` | 0.0.32 | Apache-2.0 |
 

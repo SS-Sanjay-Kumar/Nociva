@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.molecular import router as molecular_router
+from app.api.v1.endpoints.pk import router as pk_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -23,6 +24,8 @@ app.include_router(api_router, prefix="/api/v1")
 # Stream 1: the router carries its own /api/molecular prefix, so the public
 # URLs stay /api/molecular/analyze and /api/molecular/model-info.
 app.include_router(molecular_router)
+# Stream 2: pharmacokinetic simulator, router carries its own /api/pk prefix.
+app.include_router(pk_router)
 
 @app.get("/health", tags=["Health Check"])
 def health_check():
