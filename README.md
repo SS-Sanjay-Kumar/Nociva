@@ -1,6 +1,6 @@
 # GeneCollision
 
-GeneCollision is a hackathon prototype that checks a patient's medication list against published pharmacogenomic guideline annotations and shows exactly which guideline text supports each finding. It also includes a separate, clearly experimental Molecular Explorer that compares a drug structure with a public CYP2D6 inhibition dataset.
+GeneCollision is a hackathon prototype that checks a patient's medication list against published pharmacogenomic guideline annotations and shows exactly which guideline text supports each finding. It also includes two separate, clearly experimental tools: a Molecular Explorer that compares a drug structure with a public CYP2D6 inhibition dataset, and a Pharmacokinetic Simulator that shows how a hypothetical change in clearance alters a predicted concentration curve.
 
 ## What the verdicts mean
 
@@ -11,9 +11,12 @@ The review engine returns one of three verdicts and never a score or a risk leve
 - **Frontend:** React + Vite in `frontend/`, with every backend response validated against a zod contract (`frontend/src/contracts/review.ts`).
 - **Review engine:** `app/services/review_engine.py` reads the `guideline_rules` table (and `entity_relationships` for PubMed links) and is deterministic; it exposes `GET /api/v1/review/medications` and `POST /api/v1/review/assess`.
 - **Molecular Explorer:** a RandomForest classifier over RDKit Morgan fingerprints plus Tanimoto nearest neighbours (`app/services/molecular/`, `ml/`), served at `/api/molecular/*`. It is experimental and never feeds the review verdict.
+- **PK Simulator:** a closed-form one-compartment oral model with optional Monte Carlo variability (`app/services/pk/`), served at `/api/pk/*` and charted with Recharts. It uses synthetic compounds and user-supplied numbers, is not connected to any verdict, and is not clinically validated.
 - **Supabase:** accessed read-only with SELECT queries only, using a publishable key; the client refuses `sb_secret` and `service_role` keys unless `ALLOW_PRIVILEGED_KEY=1` is set.
 - **Backend:** one FastAPI app (`app/main.py`) shared with the team's original engine, which the UI does not use.
 - **Tests:** `tests/` (pytest, no network or database) and `frontend/` (vitest).
+
+The Molecular Explorer and the PK Simulator need no `.env`: without `SUPABASE_*` the backend still starts, logs "Supabase-backed routes disabled: .env missing", and serves `/api/molecular/*` and `/api/pk/*` only. The Medication Review live mode needs the `.env`.
 
 ## Quickstart (live mode)
 
@@ -27,7 +30,7 @@ open http://localhost:5173   # Vite prints the real port if 5173 is taken
 .venv/bin/pytest tests && (cd frontend && npm test)
 ```
 
-To see the UI with typed fixtures instead, with no backend or `.env`, run `cd frontend && npm install && npm run dev`. The topbar then reads "Demo fixtures, not a live engine".
+To see the UI with typed fixtures instead, with no backend or `.env`, run `cd frontend && npm install && npm run dev`. The topbar then reads "Demo fixtures, not a live engine". The PK page (`#/pk`) always calls the backend, so start it with `uvicorn app.main:app --port 8000` (no `.env` needed).
 
 ## Screenshots (live mode)
 
@@ -44,6 +47,7 @@ To see the UI with typed fixtures instead, with no backend or `.env`, run `cd fr
 - Warfarin dosing also involves VKORC1 and CYP4F2, which this tool does not evaluate.
 - The molecular model is research-grade and not clinical evidence. On its held-out scaffold-split test set it reaches AUPRC 0.704 against a positive-class prevalence of 0.235, and ROC-AUC 0.852.
 - Related PubMed links are background reading and never change a verdict.
+- The PK Simulator is a research demonstration: single oral dose, no real drug parameters, no covariate model, and the altered scenario is always hypothetical. Contextual inputs are echoed but never used in the calculation, and Monte Carlo bands are assumed demonstration distributions, not validated prediction intervals.
 
 ## Data sources and licences
 

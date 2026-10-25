@@ -123,3 +123,18 @@ feeds it.
 - *Honest limit:* the CYP2D6 classifier is a research model on public
   data; the demo patients and all outputs are synthetic and not for clinical
   decisions.
+
+### PK Simulator beat (≈40 seconds, after the Molecular Explorer)
+
+Start the backend (no `.env` needed for this page) and open **PK simulation**
+in the sidebar (SIM chip). Synthetic Compound X runs automatically.
+- Point at the banner: *"Research demonstration with synthetic parameters. Not
+  a clinical dosing or toxicity tool."*
+- Drag the clearance multiplier to 0.5 and click **Run simulation**: the dashed
+  amber curve is labelled "(hypothetical)"; read the interpretation sentence
+  (greater predicted exposure) and the AUC change card.
+- Tick **Monte Carlo** and run again: the shaded bands are labelled "Assumed
+  demonstration distribution, not a validated interval."
+- *Honest limit:* single oral dose, invented parameters, and the contextual
+  inputs (collapsed) are echoed but never used in the calculation. It is not
+  connected to the Medication Review verdict.

@@ -23,6 +23,7 @@ three `@fontsource/*` font packages — see the flag below.
 | `react` | 19.3.1 | MIT |
 | `react-dom` | 19.3.1 | MIT |
 | `react-router-dom` | 7.18.4 | MIT |
+| `recharts` | 3.10.1 | MIT |
 | `zod` | 4.6.7 | MIT |
 
 **Flag:** OFL-1.1 (SIL Open Font License 1.1) is a legitimate, widely-used

@@ -440,3 +440,32 @@ python ml/build_reference_index.py     # builds the Tanimoto reference index
 Both scripts are idempotent and deterministic (fixed seed = 42). Artifacts
 land in `models/molecular/` and are gitignored — regenerate them rather than
 committing the ~44MB of binaries.
+
+## 6. Pharmacokinetic Simulator (Stream 2)
+
+Self-contained and read-only: no database, no network, no `app.core` imports.
+
+- **Backend:** `app/api/v1/endpoints/pk.py` (router prefix `/api/pk`), models in
+  `app/models/pk.py`, computation in `app/services/pk/`. `app/main.py` always
+  includes the molecular and PK routers; the Supabase-backed `api_router`
+  (his evaluate/search plus `/api/v1/review/*`) is imported in a try/except and
+  is skipped with the warning "Supabase-backed routes disabled: .env missing"
+  when `SUPABASE_*` is not configured.
+- **Endpoints:** `POST /api/pk/simulate` (camelCase or snake_case request,
+  camelCase response; invalid parameters return 422) and `GET /api/pk/presets`
+  (three fictional compounds). Examples: `docs/contracts/pk-examples/`.
+- **Contract:** `frontend/src/contracts/pk.ts` mirrors `app/models/pk.py`;
+  `npm run schema:pk` writes `docs/contracts/pk.schema.json`. Responses are
+  parsed through the central `apiRequest`; a mismatch shows the
+  "Unexpected response from service" pane.
+- **Frontend:** `frontend/src/features/pk/` (route `#/pk`, lazy-loaded with
+  Recharts 3.10.1). Oxlint forbids `pk`, `review` and `molecular` from importing
+  each other; the Medication Review page only links to `#/pk` and passes it no
+  verdict, phenotype or patient data.
+- **Semantics:** the altered scenario is always `hypothetical: true` with the
+  user's label and is never derived from contextual inputs or any verdict.
+  Contextual inputs are echoed with the note "Contextual information only; not
+  used in the calculation". Monte Carlo bands are "Assumed demonstration
+  distributions; not a validated prediction interval." The analytic AUC used in
+  the tests is `FD·ka/(V(ka−ke))·((1−e^−keT)/ke − (1−e^−kaT)/ka)`; the `ka`
+  factor comes from integrating the closed-form curve.
