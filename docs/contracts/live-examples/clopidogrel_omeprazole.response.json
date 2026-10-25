@@ -1,0 +1,43 @@
+{
+  "patientId": "live-smoke-c",
+  "medications": [
+    {
+      "id": "clopidogrel",
+      "name": "Clopidogrel"
+    },
+    {
+      "id": "omeprazole",
+      "name": "Omeprazole"
+    }
+  ],
+  "verdict": {
+    "evidenceStatus": "insufficient_evidence",
+    "summary": "No matching guideline entry was found for the results on file, and at least one gene needed for these medications has no usable result. This is not a finding of no association.",
+    "references": [],
+    "limitations": [
+      "Only CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are evaluated.",
+      "Guideline text is quoted as published; this engine gives no dosing or prescribing advice."
+    ],
+    "checks": [
+      {
+        "label": "CYP2C19 × Clopidogrel",
+        "note": "CYP2C19 not tested",
+        "missing": true
+      },
+      {
+        "label": "CYP2C19 × Omeprazole",
+        "note": "CYP2C19 not tested",
+        "missing": true
+      }
+    ],
+    "missingData": [
+      "CYP2C19 result is not available for this patient (needed for Clopidogrel).",
+      "CYP2C19 result is not available for this patient (needed for Omeprazole)."
+    ],
+    "evidenceBasis": "Incomplete input",
+    "engineVersion": "Guideline engine v1.0",
+    "evidenceSnapshot": "ClinPGx guideline annotations, versions per reference"
+  },
+  "generatedAt": "2026-10-25T03:55:35.114544+00:00",
+  "isMock": false
+}
