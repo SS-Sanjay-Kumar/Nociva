@@ -31,6 +31,8 @@ SUPPORTED_GENES = ("CYP2D6", "CYP2C19", "CYP2C9", "CYP3A5")
 DEMO_LABEL = "Demo inhibitor list, not a clinical source"
 INHIBITOR_FILE = Path(__file__).resolve().parents[1] / "data" / "cyp_inhibitors.json"
 MAX_LITERATURE = 5
+LITERATURE_STATUSES = ("associated", "ambiguous")
+WARFARIN_LIMITATION = "Warfarin dosing also involves VKORC1 and CYP4F2, which this tool does not evaluate."
 NO_ACTIONABLE = "No actionable entry for this phenotype in the guideline summary"
 NORMAL_LIMITATION = "Normal-metabolizer recommendations are not evaluated by this engine."
 
@@ -203,6 +205,8 @@ class ReviewEngine:
         missing: List[str] = []
         limitations: List[str] = ["Only CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are evaluated."]
         limitations.append("Guideline text is quoted as published; this engine gives no dosing or prescribing advice.")
+        if "warfarin" in med_names:
+            limitations.append(WARFARIN_LIMITATION)
         assoc_specs: List[Dict[str, Any]] = []  # in deterministic order
         cited: Dict[str, Dict[str, Any]] = {}
 
@@ -358,9 +362,16 @@ class ReviewEngine:
             rows = self._literature_repo.get_pair_rows(gene, med)
         except Exception:
             return None
-        pmids = set()
+        status_by_pmid: Dict[int, str] = {}
         for row in rows:
-            if row.get("association") == "associated":
-                pmids.update(parse_pmids(row.get("pmids")))
-        top = sorted(pmids, reverse=True)[:MAX_LITERATURE]
-        return [LiteratureLink(pmid=str(p), url=f"https://pubmed.ncbi.nlm.nih.gov/{p}/") for p in top] or None
+            status = row.get("association")
+            if status not in LITERATURE_STATUSES:  # "not associated" and anything else is dropped
+                continue
+            for pmid in parse_pmids(row.get("pmids")):
+                if status_by_pmid.get(pmid) != "associated":
+                    status_by_pmid[pmid] = status
+        top = sorted(status_by_pmid, reverse=True)[:MAX_LITERATURE]
+        return [
+            LiteratureLink(pmid=str(p), url=f"https://pubmed.ncbi.nlm.nih.gov/{p}/", status=status_by_pmid[p])
+            for p in top
+        ] or None

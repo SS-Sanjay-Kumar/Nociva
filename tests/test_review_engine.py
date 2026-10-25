@@ -188,6 +188,24 @@ def test_literature_dedupe_sort_cap_and_filter():
     assert pm == ["800", "700", "600", "500", "400"]
     assert v.associations[0].literature[0].url == "https://pubmed.ncbi.nlm.nih.gov/800/"
     assert "999" not in pm
+    assert {x.status for x in v.associations[0].literature} == {"associated"}
+
+
+def test_literature_includes_ambiguous_with_status_and_prefers_associated():
+    lit = FakeLiteratureRepo(lit_rows(
+        row("ambiguous", "{10,20,30}"),
+        row("associated", "{20}"),
+        row("not associated", "{40}"),
+    ))
+    v = run([("CYP2D6", "intermediate_metabolizer")], ["tamoxifen"], lit)
+    got = {x.pmid: x.status for x in v.associations[0].literature}
+    assert got == {"30": "ambiguous", "20": "associated", "10": "ambiguous"}
+
+
+def test_warfarin_limitation_always_present():
+    v = run(ALL_NORMAL, ["metoprolol", "warfarin"])
+    assert any("VKORC1" in lim and "CYP4F2" in lim for lim in v.limitations)
+    assert not any("VKORC1" in lim for lim in run(ALL_NORMAL, ["metoprolol"]).limitations)
 
 
 def test_literature_never_changes_verdict():

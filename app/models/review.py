@@ -36,6 +36,7 @@ class MedicationOut(BaseModel):
 class LiteratureLink(BaseModel):
     pmid: str
     url: str
+    status: Optional[Literal["associated", "ambiguous"]] = None
 
 
 class EvidenceReference(BaseModel):
