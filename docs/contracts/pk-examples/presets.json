@@ -1,0 +1,77 @@
+[
+  {
+    "id": "synthetic-x",
+    "description": "Synthetic demonstration compound; not a real drug and not real parameters.",
+    "request": {
+      "compoundName": "Synthetic Compound X",
+      "route": "oral",
+      "doseMg": 100.0,
+      "bioavailability": 0.8,
+      "volumeL": 50.0,
+      "clearanceLPerH": 10.0,
+      "absorptionRatePerH": 1.2,
+      "durationHours": 24.0,
+      "comparison": {
+        "clearanceMultiplier": 0.7,
+        "label": "Hypothetical: clearance reduced to 70%"
+      },
+      "monteCarlo": {
+        "enabled": false,
+        "samples": 300,
+        "clearanceCv": 0.3,
+        "volumeCv": 0.2,
+        "seed": 42
+      }
+    }
+  },
+  {
+    "id": "synthetic-y",
+    "description": "Synthetic demonstration compound; not a real drug and not real parameters.",
+    "request": {
+      "compoundName": "Synthetic Compound Y",
+      "route": "oral",
+      "doseMg": 250.0,
+      "bioavailability": 0.6,
+      "volumeL": 120.0,
+      "clearanceLPerH": 18.0,
+      "absorptionRatePerH": 0.8,
+      "durationHours": 48.0,
+      "comparison": {
+        "clearanceMultiplier": 1.5,
+        "label": "Hypothetical: clearance increased by 50%"
+      },
+      "monteCarlo": {
+        "enabled": false,
+        "samples": 300,
+        "clearanceCv": 0.3,
+        "volumeCv": 0.2,
+        "seed": 42
+      }
+    }
+  },
+  {
+    "id": "synthetic-z",
+    "description": "Synthetic demonstration compound; not a real drug and not real parameters.",
+    "request": {
+      "compoundName": "Synthetic Compound Z",
+      "route": "oral",
+      "doseMg": 50.0,
+      "bioavailability": 0.95,
+      "volumeL": 25.0,
+      "clearanceLPerH": 4.0,
+      "absorptionRatePerH": 2.0,
+      "durationHours": 72.0,
+      "comparison": {
+        "alteredClearanceLPerH": 2.0,
+        "label": "Hypothetical: clearance of 2 L/h"
+      },
+      "monteCarlo": {
+        "enabled": false,
+        "samples": 300,
+        "clearanceCv": 0.3,
+        "volumeCv": 0.2,
+        "seed": 42
+      }
+    }
+  }
+]

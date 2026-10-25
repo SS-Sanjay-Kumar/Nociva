@@ -1,0 +1,21 @@
+{
+  "compoundName": "Synthetic Compound Z",
+  "route": "oral",
+  "doseMg": 50.0,
+  "bioavailability": 0.95,
+  "volumeL": 25.0,
+  "clearanceLPerH": 4.0,
+  "absorptionRatePerH": 2.0,
+  "durationHours": 72.0,
+  "comparison": {
+    "alteredClearanceLPerH": 2.0,
+    "label": "Hypothetical: clearance of 2 L/h"
+  },
+  "monteCarlo": {
+    "enabled": false,
+    "samples": 300,
+    "clearanceCv": 0.3,
+    "volumeCv": 0.2,
+    "seed": 42
+  }
+}

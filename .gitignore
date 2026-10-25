@@ -32,3 +32,14 @@ archive.zip
 .DS_Store
 
 .codspeed
+
+# Stream 1 / frontend
+.env.*
+!.env.example
+.venv/
+__pycache__/
+node_modules/
+dist/
+*.joblib
+models/molecular/
+*.log

@@ -1,0 +1,169 @@
+{
+  "patientId": "live-smoke-a",
+  "medications": [
+    {
+      "id": "paroxetine",
+      "name": "Paroxetine"
+    },
+    {
+      "id": "tamoxifen",
+      "name": "Tamoxifen"
+    }
+  ],
+  "verdict": {
+    "evidenceStatus": "association_found",
+    "summary": "Guideline entries matching this patient's phenotype were found for: CYP2D6 × Tamoxifen; CYP2D6 × Tamoxifen (with Paroxetine, demo inhibitor list). Quoted text is shown under evidence references.",
+    "references": [
+      {
+        "source": "CPIC",
+        "citation": "Annotation of CPIC Guideline for tamoxifen and CYP2D6",
+        "guidelineId": "PA166176068",
+        "annotationVersion": "40",
+        "lastUpdated": "2023-06-22",
+        "quote": "The CPIC Dosing Guideline for tamoxifen recommends the use of alternative hormonal therapy such as an aromatase inhibitor for postmenopausal women or aromatase inhibitor along with ovarian function suppression in premenopausal women for CYP2D6 poor metabolizer, if aromatase inhibitor use is not contraindicated. For CYP2D6 intermediate metabolizers the recommendation is to consider the recommendations stated for the CYP2D6 poor metabolizer. If aromatase inhibitor use is contraindicated, consideration should be given to use a higher but FDA approved tamoxifen dose for CYP2D6 intermediate metabolizers. For poor metabolizer, higher dose tamoxifen (40 mg/day) increases but does not normalize endoxifen concentrations and can be considered if there are contraindications to aromatase inhibitor therapy. CPIC has updated the CYP2D6 genotype-phenotype translation in all supplemental files since the guideline was published."
+      },
+      {
+        "source": "CPNDS",
+        "citation": "Annotation of CPNDS Guideline for tamoxifen and CYP2D6",
+        "guidelineId": "PA166181721",
+        "annotationVersion": "5",
+        "lastUpdated": "2024-04-24",
+        "quote": "The Canadian Pharmacogenomics Network for Drug Safety (CPNDS) clinical recommendation group has published clinical practice guidelines for CYP2D6 as a treatment decision aid for ER-positive non-metastatic breast cancer patients. The guidelines recommend that alternatives to standard tamoxifen treatments may be considered in CYP2D6 poor or intermediate metabolizers with an emphasis on the use of comprehensive CYP2D6 genotyping panels in guiding treatment decisions."
+      },
+      {
+        "source": "DPWG",
+        "citation": "Annotation of DPWG Guideline for tamoxifen and CYP2D6",
+        "guidelineId": "PA166104966",
+        "annotationVersion": "58",
+        "lastUpdated": "2026-04-27",
+        "quote": "For CYP2D6 poor and intermediate metabolizers, consider an alternative medication or a dose increase. For intermediate metabolizers, avoid concomitant CYP2D6 inhibitor use."
+      }
+    ],
+    "limitations": [
+      "Only CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are evaluated.",
+      "Guideline text is quoted as published; this engine gives no dosing or prescribing advice.",
+      "Demo inhibitor list, not a clinical source."
+    ],
+    "mechanism": [
+      {
+        "kind": "gene",
+        "label": "Patient genotype",
+        "title": "CYP2D6 *1/*4",
+        "sub": "intermediate metabolizer · activity score 1.0"
+      },
+      {
+        "kind": "inhibitor",
+        "label": "Inhibitor on list",
+        "title": "Paroxetine",
+        "sub": "Demo inhibitor list, not a clinical source."
+      },
+      {
+        "kind": "substrate",
+        "label": "Substrate",
+        "title": "Tamoxifen",
+        "sub": "Listed in guideline entries for CYP2D6."
+      },
+      {
+        "kind": "effect",
+        "label": "Guideline text (quoted)",
+        "title": "DPWG: Annotation of DPWG Guideline for tamoxifen and CYP2D6",
+        "sub": "“For CYP2D6 poor and intermediate metabolizers, consider an alternative medication or a dose increase. For intermediate metabolizers, avoid concomitant CYP2D6 inhibitor use.”"
+      }
+    ],
+    "checks": [
+      {
+        "label": "CYP2D6 × Paroxetine",
+        "note": "CYP2D6 intermediate metabolizer: No actionable entry for this phenotype in the guideline summary",
+        "missing": false
+      },
+      {
+        "label": "CYP2D6 × Tamoxifen",
+        "note": "CYP2D6 intermediate metabolizer: guideline entry found",
+        "missing": false
+      }
+    ],
+    "associations": [
+      {
+        "ruleId": "GG-CYP2D6-TAMOXIFEN",
+        "kind": "gene_drug",
+        "gene": "CYP2D6",
+        "medication": "tamoxifen",
+        "guidelineIds": [
+          "PA166176068",
+          "PA166181721",
+          "PA166104966"
+        ],
+        "literature": [
+          {
+            "pmid": "42380819",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42380819/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41862488",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41862488/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41259728",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41259728/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41036998",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41036998/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "40452016",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40452016/",
+            "status": "ambiguous"
+          }
+        ]
+      },
+      {
+        "ruleId": "GDD-CYP2D6-PAROXETINE-TAMOXIFEN",
+        "kind": "gene_drug_drug",
+        "gene": "CYP2D6",
+        "medication": "tamoxifen",
+        "inhibitor": "paroxetine",
+        "guidelineIds": [
+          "PA166104966"
+        ],
+        "literature": [
+          {
+            "pmid": "42380819",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42380819/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41862488",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41862488/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41259728",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41259728/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41036998",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41036998/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "40452016",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40452016/",
+            "status": "ambiguous"
+          }
+        ]
+      }
+    ],
+    "evidenceBasis": "Guideline-supported",
+    "ruleId": "GG-CYP2D6-TAMOXIFEN",
+    "engineVersion": "Guideline engine v1.0",
+    "evidenceSnapshot": "ClinPGx guideline annotations, versions per reference"
+  },
+  "generatedAt": "2026-10-25T04:25:23.832863+00:00",
+  "isMock": false
+}

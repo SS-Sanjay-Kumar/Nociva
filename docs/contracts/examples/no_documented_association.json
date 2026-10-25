@@ -1,0 +1,24 @@
+{
+  "patientId": "patient-b",
+  "medications": [
+    { "id": "med-metoprolol", "name": "Metoprolol", "rxnormId": "6918", "drugClass": "Beta blocker · CYP2D6 substrate" },
+    { "id": "med-warfarin", "name": "Warfarin", "rxnormId": "11289", "drugClass": "Anticoagulant · CYP2C9 substrate" }
+  ],
+  "verdict": {
+    "evidenceStatus": "no_documented_association",
+    "summary": "No curated gene-drug-drug association matches this patient's genotype and medication list in the supported rule set.",
+    "references": [
+      { "source": "Rule set", "citation": "Curated gene-drug-drug entries searched. None matched this combination." }
+    ],
+    "limitations": ["Demonstration fixture — not a live clinical decision."],
+    "checks": [
+      { "label": "Metoprolol × Warfarin", "note": "CYP2D6 normal metabolizer  ·  CYP2C9 normal metabolizer", "missing": false }
+    ],
+    "evidenceBasis": "Rule set searched",
+    "ruleId": "—",
+    "engineVersion": "Rules engine v0.3 (demo)",
+    "evidenceSnapshot": "2026-10-20"
+  },
+  "generatedAt": "2026-10-24T00:00:00.000Z",
+  "isMock": true
+}
