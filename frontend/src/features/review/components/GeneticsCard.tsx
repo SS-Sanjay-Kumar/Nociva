@@ -26,9 +26,11 @@ function phenotypeChipVariant(phenotype?: Genotype['phenotype']): ChipVariant {
 export function GeneticsCard({
   patient,
   flagText,
+  children,
 }: {
   patient: PatientProfile
   flagText?: string | null
+  children?: React.ReactNode
 }) {
   const d6 = patient.genotypes.find((g) => g.gene === 'CYP2D6')
   const rest = patient.genotypes.filter((g) => g.gene !== 'CYP2D6')
@@ -48,12 +50,15 @@ export function GeneticsCard({
       <div className="m-3 flex flex-col gap-3 rounded-[10px] border border-line bg-surface-2 p-3.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="font-display text-lg font-extrabold tracking-[-0.01em]">CYP2D6</span>
-          <Chip variant={phenotypeChipVariant(d6.phenotype)}>{phenotypeLabel(d6)}</Chip>
+          {d6.missing ? <Chip variant="miss">Not tested</Chip> : <Chip variant={phenotypeChipVariant(d6.phenotype)}>{phenotypeLabel(d6)}</Chip>}
         </div>
-        <div className="flex flex-wrap items-baseline gap-3">
-          <span className="font-mono text-[22px] font-medium tracking-[-0.02em]">{d6.diplotype}</span>
-          <Fine>Activity score {score.toFixed(1)}</Fine>
-        </div>
+        {!d6.missing && (
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="font-mono text-[22px] font-medium tracking-[-0.02em]">{d6.diplotype}</span>
+            {d6.activityScore !== undefined && <Fine>Activity score {score.toFixed(1)}</Fine>}
+          </div>
+        )}
+        {d6.activityScore !== undefined && (
         <div className="flex flex-col gap-1.5">
           <div className="relative">
             <div className="flex h-2.5 overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
@@ -80,6 +85,7 @@ export function GeneticsCard({
             </span>
           </div>
         </div>
+        )}
       </div>
 
       {flagText && (
@@ -111,6 +117,8 @@ export function GeneticsCard({
           </div>
         ))}
       </div>
+
+      {children}
 
       <Fine className="px-4 pb-3.5 pt-2.5">
         Activity score bands follow CPIC and DPWG consensus. Supported genes in this demo: CYP2D6, CYP2C19,

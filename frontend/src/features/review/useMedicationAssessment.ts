@@ -11,7 +11,7 @@ export function useMedicationAssessment() {
   const [ranKey, setRanKey] = useState<string | null>(null)
 
   const submit = useCallback(
-    async (patient: PatientProfile, medications: Medication[], options: { simulateError?: boolean } = {}) => {
+    async (patient: PatientProfile, medications: Medication[], options: { simulateError?: boolean; runKey?: string } = {}) => {
       const medicationIds = medications.map((m) => m.id)
       if (medicationIds.length < 2) {
         setState('unsupported')
@@ -26,7 +26,7 @@ export function useMedicationAssessment() {
         const data = await runAssessment(patient, medications, options)
         setResult(data)
         setState('success')
-        setRanKey(`${patient.id}|${medicationIds.join(',')}`)
+        setRanKey(options.runKey ?? `${patient.id}|${medicationIds.join(',')}`)
       } catch (err) {
         if (err instanceof ContractError) {
           setState('contract_error')

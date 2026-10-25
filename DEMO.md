@@ -155,3 +155,5 @@ experimental, and it never changes the Medication Review verdict."*
 - *"No documented association is not a safety finding."*
 - *"Experimental, and it never changes the clinical verdict."*
 - *"This predicts an assay, not a patient."*
+
+*Live mode only:* in **Pharmacogenetic profile** you can change each gene's phenotype (or set it to "Not tested"); the result goes stale until you run again, and "Reset to preset" restores the patient. Mock mode keeps profiles read-only.

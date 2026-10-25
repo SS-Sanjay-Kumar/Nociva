@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Medication, PatientProfile } from '../../types'
+import type { Genotype, Medication, PatientProfile } from '../../types'
 import { fetchMedications, fetchPatients } from './api'
 import { liveMedication } from './liveApi'
 import { useMedicationSearch } from './useMedicationSearch'
@@ -19,6 +19,8 @@ import { VerdictCard } from './components/VerdictCard'
 import { MechanismCard } from './components/MechanismCard'
 import { EvidenceCard } from './components/EvidenceCard'
 import { LimitsCard } from './components/LimitsCard'
+import { ProfileEditor } from './components/ProfileEditor'
+import { PROFILE_COPY, draftFromPatient, genotypesKey } from './profileEdit'
 import { StaleBanner } from './components/StaleBanner'
 import { ExplorerLinkCard } from './components/ExplorerLinkCard'
 import { PkLinkCard } from './components/PkLinkCard'
@@ -39,6 +41,8 @@ export function ReviewPage() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
   const [medicationIds, setMedicationIds] = useState<string[]>([])
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
+  // In-memory edits to the selected patient's genotypes; null means the preset is in use.
+  const [draft, setDraft] = useState<Genotype[] | null>(null)
 
   const { state, result, errorMessage, contractErrorPath, ranKey, submit, reset } = useMedicationAssessment()
 
@@ -70,17 +74,24 @@ export function ReviewPage() {
     [medicationIds, medications],
   )
 
-  const patient = patients.find((p) => p.id === selectedPatientId) ?? null
-  const currentKey = patient ? `${patient.id}|${medicationIds.join(',')}` : null
+  const preset = patients.find((p) => p.id === selectedPatientId) ?? null
+  const patient = useMemo(() => (preset && draft ? { ...preset, genotypes: draft } : preset), [preset, draft])
+  const currentKey = patient ? `${patient.id}|${medicationIds.join(',')}${draft ? `|${genotypesKey(draft)}` : ''}` : null
+
+  const editGene = (gene: string, patch: Partial<Genotype>) => {
+    if (!preset) return
+    setDraft((prev) => (prev ?? draftFromPatient(preset)).map((g) => (g.gene === gene ? { ...g, ...patch } : g)))
+  }
   const stale = state === 'success' && ranKey !== null && currentKey !== ranKey
 
   const run = (simulateError = false) => {
     if (!patient) return
-    submit(patient, selectedMedications, { simulateError })
+    submit(patient, selectedMedications, { simulateError, runKey: currentKey ?? undefined })
   }
 
   const pickPatient = (p: PatientProfile) => {
     setSelectedPatientId(p.id)
+    setDraft(null)
     setMedicationIds([])
     setActiveScenarioId(null)
     reset()
@@ -97,6 +108,7 @@ export function ReviewPage() {
     const scenarioPatient = patients.find((p) => p.id === scenario.patientId)
     if (!scenarioPatient) return
     setSelectedPatientId(scenario.patientId)
+    setDraft(null)
     const ids = live ? scenario.liveMedicationIds : scenario.medicationIds
     const meds = live ? ids.map(liveMedication) : ids.map((id) => medications.find((m) => m.id === id)).filter((m): m is Medication => Boolean(m))
     if (live) remember(meds)
@@ -163,7 +175,18 @@ export function ReviewPage() {
       <div className="grid grid-cols-1 items-start gap-5 min-[901px]:grid-cols-[minmax(340px,400px)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
           <PatientCard patients={patients} selectedId={patient.id} onPick={pickPatient} />
-          <GeneticsCard patient={patient} />
+          <GeneticsCard patient={patient}>
+            {live ? (
+              <ProfileEditor
+                genotypes={draft ?? draftFromPatient(preset!)}
+                edited={draft !== null}
+                onChange={editGene}
+                onReset={() => setDraft(null)}
+              />
+            ) : (
+              <p className="px-4 pb-2 text-[12.5px] text-ink-3">{PROFILE_COPY.mockDisabled}</p>
+            )}
+          </GeneticsCard>
           <MedsCard
             medications={medications}
             selectedIds={medicationIds}
