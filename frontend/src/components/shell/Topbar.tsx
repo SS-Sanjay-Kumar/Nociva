@@ -7,7 +7,7 @@ export function Topbar({ title, variant = 'review' }: { title: string; variant?:
     <header className="sticky top-0 z-10 flex min-h-[60px] items-center justify-between gap-3 border-b border-line bg-surface px-4 py-2.5 max-[559px]:flex-wrap min-[721px]:px-6">
       <div className="flex min-w-0 items-center gap-2 text-[13px] text-ink-3 max-[559px]:w-full">
         {/* Below 640px only the page title shows, so the chips and avatar never crowd it. */}
-        <span className="hidden min-[640px]:inline">GeneCollision</span>
+        <span className="hidden min-[640px]:inline">Nociva</span>
         <ChevronRight size={14} className="hidden min-[640px]:block" />
         <b className="font-semibold text-ink">{title}</b>
       </div>

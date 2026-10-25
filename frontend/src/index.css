@@ -11,7 +11,7 @@
 @import "@fontsource/ibm-plex-mono/500.css";
 
 /*
- * Design tokens ported from design/prototype.html (GENECOLLISION_HANDOFF.md).
+ * Design tokens ported from design/prototype.html (NOCIVA_HANDOFF.md).
  * Tailwind v4's CSS-native @theme generates both utility classes (bg-navy-900,
  * font-display, rounded-lg, shadow-sh2, ...) and the equivalent CSS variables
  * under :root, so this block is both the Tailwind theme config and tokens.css.

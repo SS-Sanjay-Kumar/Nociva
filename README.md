@@ -1,6 +1,6 @@
-# GeneCollision
+# Nociva
 
-GeneCollision is a hackathon prototype that checks a patient's medication list against published pharmacogenomic guideline annotations and shows exactly which guideline text supports each finding. It also includes two separate, clearly experimental tools: a Molecular Explorer that compares a drug structure with a public CYP2D6 inhibition dataset, and a Pharmacokinetic Simulator that shows how a hypothetical change in clearance alters a predicted concentration curve.
+Nociva is a hackathon prototype that checks a patient's medication list against published pharmacogenomic guideline annotations and shows exactly which guideline text supports each finding. It also includes two separate, clearly experimental tools: a Molecular Explorer that compares a drug structure with a public CYP2D6 inhibition dataset, and a Pharmacokinetic Simulator that shows how a hypothetical change in clearance alters a predicted concentration curve.
 
 ## What the verdicts mean
 

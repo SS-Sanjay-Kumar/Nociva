@@ -1,5 +1,5 @@
 /**
- * Shared type contracts for GeneCollision frontend.
+ * Shared type contracts for Nociva frontend.
  *
  * These interfaces define the expected shape of data exchanged with the
  * backend. See INTEGRATION.md at the repo root for the authoritative API

@@ -10,7 +10,7 @@ export interface Scenario {
 
 /**
  * Demo scenarios deterministically reproducing each of the three verdict
- * states, matching GENECOLLISION_HANDOFF.md section 13's demo script.
+ * states, matching NOCIVA_HANDOFF.md section 13's demo script.
  */
 export const SCENARIOS: Scenario[] = [
   {

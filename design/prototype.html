@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>GeneCollision</title>
+<title>Nociva</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -518,7 +518,7 @@ function evaluate(patient, ids){
       summary:'Sertraline inhibits CYP2D6 weakly to moderately, and the effect depends on dose. Published evidence is inconsistent, so the rule set does not assign a confident association.',
       basis:'Conflicting evidence',basisSub:'Dose-dependent, no graded entry',
       nodes:[geneNode(d6),{k:'inhib',label:'Possible inhibitor',title:'Sertraline',sub:'Weak to moderate, dose-dependent CYP2D6 inhibition.'},{k:'sub',label:'Substrate',title:drugOf(amb).name,sub:'Metabolised by CYP2D6.'},{k:'unk',label:'Documented effect',title:'Evidence conflicting',sub:'Reports differ on whether the effect is clinically meaningful.'}],
-      evidence:[EV.fda,{src:'Engine',title:'Curation note: conflicting or dose-dependent evidence, no graded association assigned',cite:'GeneCollision rule set v0.3 (synthetic)',kind:'Engine note'}],
+      evidence:[EV.fda,{src:'Engine',title:'Curation note: conflicting or dose-dependent evidence, no graded association assigned',cite:'Nociva rule set v0.3 (synthetic)',kind:'Engine note'}],
       missing:['Sertraline dose is not supplied and would change how this rule reads.'],
       limits:['This is not a finding of no association.','Clinical judgement and local guidance still apply.']};
   }
@@ -635,7 +635,7 @@ function Structure({mol,bg='#fff',label='Molecular structure'}){
 function Sidebar({view,setView}){
   const item=(id,icon,text,tag,tagCls,disabled)=>html`<button className="nav-i" title=${text} aria-current=${view===id?'page':undefined} disabled=${!!disabled} onClick=${()=>!disabled&&setView(id)}><${Icon} name=${icon} size=${18}/><span className="lbl">${text}</span>${tag&&html`<span className=${cx('nav-tag',tagCls)}>${tag}</span>`}</button>`;
   return html`<aside className="side">
-    <div className="brand"><${Logo}/><span className="brand-name">Gene<b>Collision</b></span></div>
+    <div className="brand"><${Logo}/><span className="brand-name">Noci<b>va</b></span></div>
     <nav className="nav" aria-label="Primary">
       ${item('review','activity','Medication review')}
       ${item('explorer','flask','Molecular explorer','Experimental','tag-exp')}
@@ -650,7 +650,7 @@ function Sidebar({view,setView}){
 }
 function Topbar({view}){
   return html`<header className="topbar">
-    <div className="crumbs"><span>GeneCollision</span><${Icon} name="chevron" size=${14}/><b>${view==='review'?'Medication review':'Molecular explorer'}</b></div>
+    <div className="crumbs"><span>Nociva</span><${Icon} name="chevron" size=${14}/><b>${view==='review'?'Medication review':'Molecular explorer'}</b></div>
     <div className="tb-right">
       <span className="chip chip-teal hide-sm"><${Icon} name="shield" size=${13}/>Deterministic engine v0.3</span>
       <span className="chip chip-amber"><${Icon} name="database" size=${13}/>Synthetic data</span>
@@ -658,7 +658,7 @@ function Topbar({view}){
     </div>
   </header>`;
 }
-const Footer=()=>html`<div className="foot"><${Icon} name="info" size=${14}/><span>All patients, genotypes and outputs are synthetic demonstration data. GeneCollision is a hackathon prototype, not a medical device, and must not inform clinical decisions.</span></div>`;
+const Footer=()=>html`<div className="foot"><${Icon} name="info" size=${14}/><span>All patients, genotypes and outputs are synthetic demonstration data. Nociva is a hackathon prototype, not a medical device, and must not inform clinical decisions.</span></div>`;
 
 /* ============ medication review ============ */
 const phCls=c=>c==='NM'?'chip-teal':(c==='IM'||c==='PM')?'chip-amber':(c==='RM'||c==='UM')?'chip-navy':'chip';

@@ -1,6 +1,6 @@
-# GeneCollision: 3-minute demo script
+# Nociva: 3-minute demo script
 
-GeneCollision has three parts: the **Medication Review** (a read-only,
+Nociva has three parts: the **Medication Review** (a read-only,
 guideline-backed engine), the experimental **Molecular Explorer**, and the
 experimental **Pharmacokinetic Simulator**. All patients and compounds are
 synthetic.

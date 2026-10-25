@@ -1,4 +1,4 @@
-# GeneCollision: design handoff specification
+# Nociva: design handoff specification
 
 Hackathon build. Frontend target: ship before midnight, 24 Oct 2026.
 Visual source of truth: `design/prototype.html` (the interactive prototype). Where this document and the prototype disagree, the prototype wins on looks and this document wins on safety rules.
@@ -8,10 +8,10 @@ Visual source of truth: `design/prototype.html` (the interactive prototype). Whe
 ## 0. Kickoff prompt for Claude Code (paste this first)
 
 ```
-You are building the GeneCollision frontend for a 24-hour AI-in-healthcare hackathon.
+You are building the Nociva frontend for a 24-hour AI-in-healthcare hackathon.
 
 Read these two files in full before writing any code:
-1. GENECOLLISION_HANDOFF.md (this spec)
+1. NOCIVA_HANDOFF.md (this spec)
 2. design/prototype.html (a working prototype; copy its CSS tokens and component styling exactly)
 
 Work phase by phase as defined in section 12 of the spec. After each phase, run the phase's checks, report the raw command output, and STOP. Do not start the next phase until I reply "go".
@@ -30,7 +30,7 @@ Start with Phase 0 now. Show me the output of `npm run build` and `npm run lint`
 
 ## 1. Product in one paragraph
 
-GeneCollision adds a patient's pharmacogenetic profile to a drug–drug interaction check. A doctor picks a synthetic patient, sees their gene phenotypes, selects medications, and runs a **deterministic** assessment that returns exactly one of: association found, no documented association found, ambiguous or insufficient evidence. A separate **Molecular Explorer** takes a SMILES string and returns (A) structurally similar reference compounds and (B) an experimental CYP2D6 inhibition prediction from a locally trained Random Forest. The two never mix.
+Nociva adds a patient's pharmacogenetic profile to a drug–drug interaction check. A doctor picks a synthetic patient, sees their gene phenotypes, selects medications, and runs a **deterministic** assessment that returns exactly one of: association found, no documented association found, ambiguous or insufficient evidence. A separate **Molecular Explorer** takes a SMILES string and returns (A) structurally similar reference compounds and (B) an experimental CYP2D6 inhibition prediction from a locally trained Random Forest. The two never mix.
 
 ## 2. Non-negotiable rules
 
@@ -188,7 +188,7 @@ A dashed card with a ghost axis and the text "Concentration–time curve renders
 | explorer.similarity | **Similarity is not interaction risk.** Structurally similar molecules can behave differently in the body, and dissimilar ones can interact. A high score does not establish a clinical interaction. |
 | explorer.isolation | **Isolated from the clinical assessment.** This prediction is never an input to the deterministic rules engine and cannot change a Medication Review verdict. |
 | ml.disclaimer | The score is a model probability, not a calibrated clinical risk. It describes activity in a laboratory assay, not what happens in a patient. |
-| footer.synthetic | All patients, genotypes and outputs are synthetic demonstration data. GeneCollision is a hackathon prototype, not a medical device, and must not inform clinical decisions. |
+| footer.synthetic | All patients, genotypes and outputs are synthetic demonstration data. Nociva is a hackathon prototype, not a medical device, and must not inform clinical decisions. |
 
 ## 8. API contract
 
@@ -285,7 +285,7 @@ Checks: clean clone → `npm i && npm run dev` works offline after install. STOP
 
 Phase 1:
 ```
-Phase 0 is approved. Do Phase 1 from GENECOLLISION_HANDOFF.md: shell, routing, shared UI primitives and a /styleguide route. Match design/prototype.html exactly (tokens, radii, chip variants, sidebar evidence key). Show screenshots at 1440, 1024 and 390 widths, then STOP.
+Phase 0 is approved. Do Phase 1 from NOCIVA_HANDOFF.md: shell, routing, shared UI primitives and a /styleguide route. Match design/prototype.html exactly (tokens, radii, chip variants, sidebar evidence key). Show screenshots at 1440, 1024 and 390 widths, then STOP.
 ```
 Phase 2:
 ```

@@ -8,7 +8,7 @@ export function Sidebar() {
       <div className="flex items-center gap-2.5 px-1.5 py-1 text-white max-[720px]:p-0">
         <Logo />
         <span className="min-[721px]:max-[1100px]:hidden font-display text-lg font-extrabold tracking-[-0.015em] max-[720px]:inline">
-          Gene<b className="font-extrabold text-teal-300">Collision</b>
+          Noci<b className="font-extrabold text-teal-300">va</b>
         </span>
       </div>
 

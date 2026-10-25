@@ -1,5 +1,5 @@
 /**
- * Safety-critical copy, hard-coded here per GENECOLLISION_HANDOFF.md section 7.
+ * Safety-critical copy, hard-coded here per NOCIVA_HANDOFF.md section 7.
  * These strings are rendered unconditionally for their evidence status and are
  * NEVER derived from backend or mock verdict text, so a careless fixture change
  * can't accidentally soften or remove a safety callout.
@@ -31,6 +31,6 @@ export const COPY = {
       'result. Check that the backend is running, then try again.',
   },
   footerSynthetic:
-    'All patients, genotypes and outputs are synthetic demonstration data. GeneCollision is a hackathon ' +
+    'All patients, genotypes and outputs are synthetic demonstration data. Nociva is a hackathon ' +
     'prototype, not a medical device, and must not inform clinical decisions.',
 } as const
