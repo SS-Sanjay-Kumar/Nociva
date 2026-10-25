@@ -376,16 +376,43 @@ response from service" pane naming the exact failing field path instead.
 Extra fields your backend adds that the frontend doesn't know about yet are
 silently allowed, not an error.
 
-### Switching Medication Review off mock mode
+### Live mode: the guideline-backed review engine
 
-Set `VITE_REVIEW_MODE=live` (see `frontend/.env.example`) — that's it.
-`frontend/src/lib/config.ts` derives `MEDICATION_REVIEW_MOCK_MODE` from this
-one flag, and `frontend/src/features/review/api.ts` already has the live
-branch implemented (calling the three endpoints above through the
-schema-validated `apiRequest`) alongside the mock branch; no code edit is
-needed on the frontend side once your endpoints exist. The topbar's "Demo
-fixtures, not a live engine" chip (`frontend/src/components/shell/Topbar.tsx`)
-automatically switches to "Deterministic engine v0.3" in live mode.
+The backend now serves the Medication Review contract itself:
+`GET /api/v1/review/medications?query=` and `POST /api/v1/review/assess`
+(see `app/api/v1/endpoints/review.py`, `app/services/review_engine.py`;
+read-only against Supabase, SELECT only).
+
+Run everything in live mode with `./scripts/dev.sh`, or by hand:
+
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000         # repo root
+cd frontend && VITE_REVIEW_MODE=live npm run dev
+```
+
+Required environment names (values never committed):
+- repo-root `.env`: `SUPABASE_URL`, `SUPABASE_KEY`
+- `frontend/.env.local` (optional): `VITE_REVIEW_MODE` (`mock` default, `live`),
+  `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`)
+
+In live mode the topbar chip reads "Guideline engine v1.0 · demo inhibitor
+list". Patients stay synthetic frontend data; only genes with a result are
+sent (a missing gene is omitted, never defaulted). There is no silent
+fallback to mocks: if the service is down the UI says "Review service is not
+running" with a retry button, and a response that fails the zod contract
+shows the "Unexpected response from service" pane.
+
+Live demo scenarios (expected verdicts):
+1. Patient A + paroxetine + tamoxifen (CYP2D6 *1/*4 intermediate) → Association found
+2. Patient B + metoprolol + warfarin (CYP2D6, CYP2C9 normal) → No documented association
+   (limitations include that warfarin dosing also involves VKORC1/CYP4F2)
+3. Patient C + clopidogrel + omeprazole (no CYP2C19 result) → Insufficient evidence
+
+Literature links ("Background reading (PubMed)") use `entity_relationships`
+rows with association `associated` or `ambiguous`, each labelled with its
+status; they never affect the verdict.
+
+Mock mode is unchanged and remains the default.
 
 **Important constraint carried over from Stream 1 design:** the CYP2D6 ML
 classifier's output must never be fed into this deterministic verdict. If

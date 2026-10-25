@@ -2,6 +2,13 @@
 
 Start both servers first (see README.md). Open http://localhost:5173.
 
+**Live mode:** `./scripts/dev.sh` starts the backend and Vite with
+`VITE_REVIEW_MODE=live`; the three scenario pills below then hit the real
+guideline engine (topbar chip: "Guideline engine v1.0 · demo inhibitor
+list"). Requires `SUPABASE_URL` and `SUPABASE_KEY` in the repo-root `.env`.
+The script below describes mock mode (`VITE_REVIEW_MODE=mock`, the default
+when running `npm run dev` alone). See INTEGRATION.md §3 for live details.
+
 ## Medication Review (≈70 seconds) — demonstration fixtures, not a live engine
 
 The topbar shows **"Demo fixtures, not a live engine"** — point at it once:
