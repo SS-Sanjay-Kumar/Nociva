@@ -1,0 +1,16 @@
+{
+  "_label": "Demo inhibitor list, not a clinical source",
+  "inhibitors": [
+    {"gene": "CYP2D6", "drug": "paroxetine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2D6", "drug": "fluoxetine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2D6", "drug": "bupropion", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2D6", "drug": "quinidine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2D6", "drug": "terbinafine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "fluoxetine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "fluvoxamine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "fluconazole", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "ticlopidine", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "omeprazole", "note": "Demo inhibitor list, not a clinical source", "verified": false},
+    {"gene": "CYP2C19", "drug": "esomeprazole", "note": "Demo inhibitor list, not a clinical source", "verified": false}
+  ]
+}
