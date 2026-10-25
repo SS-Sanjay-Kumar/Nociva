@@ -27,8 +27,8 @@ describe('EvidenceCard', () => {
             medication: 'b',
             guidelineIds: ['X1'],
             literature: [
-              { pmid: '5', url: 'https://pubmed.ncbi.nlm.nih.gov/5/' },
-              { pmid: '9', url: 'https://pubmed.ncbi.nlm.nih.gov/9/' },
+              { pmid: '5', url: 'https://pubmed.ncbi.nlm.nih.gov/5/', status: 'ambiguous' },
+              { pmid: '9', url: 'https://pubmed.ncbi.nlm.nih.gov/9/', status: 'associated' },
             ],
           },
         ]}
@@ -43,6 +43,8 @@ describe('EvidenceCard', () => {
 
     const links = screen.getAllByRole('link', { name: /PMID/ })
     expect(links.map((l) => l.textContent)).toEqual(['PMID 9', 'PMID 5'])
+    expect(screen.getByText('(associated)')).toBeTruthy()
+    expect(screen.getByText('(ambiguous)')).toBeTruthy()
     expect(links[0].getAttribute('rel')).toBe('noopener noreferrer')
     expect(links[0].getAttribute('target')).toBe('_blank')
     expect(screen.getByText('Related literature, not a clinical recommendation.')).toBeTruthy()

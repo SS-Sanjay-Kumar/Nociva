@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Medication, PatientProfile } from '../../types'
 import { fetchMedications, fetchPatients } from './api'
+import { liveMedication } from './liveApi'
+import { useMedicationSearch } from './useMedicationSearch'
+import { MEDICATION_REVIEW_MOCK_MODE } from '../../lib/config'
+import { AssociationsCard } from './components/AssociationsCard'
 import { useMedicationAssessment } from './useMedicationAssessment'
 import { SCENARIOS } from './mocks/scenarios'
 import { PatientCard } from './components/PatientCard'
@@ -23,7 +27,14 @@ import { ContractErrorPane } from '../../components/ui/ContractErrorPane'
 
 export function ReviewPage() {
   const [patients, setPatients] = useState<PatientProfile[]>([])
+  // Every medication the page has seen (initial list, search results, scenarios); resolves selected ids.
   const [medications, setMedications] = useState<Medication[]>([])
+  const [bootNote, setBootNote] = useState<string | null>(null)
+  const live = !MEDICATION_REVIEW_MOCK_MODE
+  const search = useMedicationSearch([])
+
+  const remember = (meds: Medication[]) =>
+    setMedications((prev) => [...prev, ...meds.filter((m) => !prev.some((p) => p.id === m.id))])
   const [bootstrapping, setBootstrapping] = useState(true)
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
   const [medicationIds, setMedicationIds] = useState<string[]>([])
@@ -32,19 +43,32 @@ export function ReviewPage() {
   const { state, result, errorMessage, contractErrorPath, ranKey, submit, reset } = useMedicationAssessment()
 
   useEffect(() => {
-    Promise.all([fetchPatients(), fetchMedications()])
+    // Live mode must not hide a dead service: patients still load, the medication list reports the failure.
+    const medsRequest = fetchMedications().catch((err: unknown) => {
+      setBootNote(err instanceof Error ? err.message : ((err as { message?: string })?.message ?? 'Medication list unavailable'))
+      return [] as Medication[]
+    })
+    Promise.all([fetchPatients(), medsRequest])
       .then(([p, m]) => {
         setPatients(p)
-        setMedications(m)
+        const defaults = SCENARIOS[0]
+        const defaultIds = live ? defaults.liveMedicationIds : defaults.medicationIds
+        setMedications([...m, ...(live ? defaultIds.map(liveMedication).filter((x) => !m.some((y) => y.id === x.id)) : [])])
+        search.setResults(m)
         if (p[0]) {
           setSelectedPatientId(p[0].id)
-          const defaults = SCENARIOS[0]
-          setMedicationIds(defaults.medicationIds)
+          setMedicationIds(defaultIds)
           setActiveScenarioId(defaults.id)
         }
       })
       .finally(() => setBootstrapping(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const selectedMedications = useMemo(
+    () => medicationIds.map((id) => medications.find((m) => m.id === id)).filter((m): m is Medication => Boolean(m)),
+    [medicationIds, medications],
+  )
 
   const patient = patients.find((p) => p.id === selectedPatientId) ?? null
   const currentKey = patient ? `${patient.id}|${medicationIds.join(',')}` : null
@@ -52,7 +76,7 @@ export function ReviewPage() {
 
   const run = (simulateError = false) => {
     if (!patient) return
-    submit(patient, medicationIds, { simulateError })
+    submit(patient, selectedMedications, { simulateError })
   }
 
   const pickPatient = (p: PatientProfile) => {
@@ -73,9 +97,12 @@ export function ReviewPage() {
     const scenarioPatient = patients.find((p) => p.id === scenario.patientId)
     if (!scenarioPatient) return
     setSelectedPatientId(scenario.patientId)
-    setMedicationIds(scenario.medicationIds)
+    const ids = live ? scenario.liveMedicationIds : scenario.medicationIds
+    const meds = live ? ids.map(liveMedication) : ids.map((id) => medications.find((m) => m.id === id)).filter((m): m is Medication => Boolean(m))
+    if (live) remember(meds)
+    setMedicationIds(ids)
     setActiveScenarioId(scenarioId)
-    submit(scenarioPatient, scenario.medicationIds)
+    submit(scenarioPatient, meds)
   }
 
   if (bootstrapping || !patient) {
@@ -92,7 +119,7 @@ export function ReviewPage() {
   } else if (state === 'loading') {
     pane = <LoadingPane />
   } else if (state === 'error') {
-    pane = <EnginePane onRetry={() => run(false)} />
+    pane = <EnginePane onRetry={() => run(false)} message={live ? (errorMessage ?? undefined) : undefined} />
   } else if (state === 'contract_error') {
     pane = <ContractErrorPane path={contractErrorPath ?? '(root)'} message={errorMessage ?? 'Response did not match the expected shape.'} />
   } else {
@@ -101,6 +128,9 @@ export function ReviewPage() {
         {stale && <StaleBanner onRerun={() => run(false)} />}
         <VerdictCard result={result} patient={patient} />
         <MechanismCard mechanism={result.verdict.mechanism} checks={result.verdict.checks} />
+        {result.verdict.associations && result.verdict.associations.length > 0 && (
+          <AssociationsCard associations={result.verdict.associations} />
+        )}
         <div className="grid grid-cols-1 gap-4 min-[901px]:grid-cols-2">
           <EvidenceCard references={result.verdict.references} associations={result.verdict.associations} />
           <LimitsCard missingData={result.verdict.missingData} limitations={result.verdict.limitations} />
@@ -120,6 +150,11 @@ export function ReviewPage() {
             Check a synthetic patient's medications against evidence-supported pharmacogenetic gene–drug–drug
             associations.
           </p>
+          {bootNote && (
+            <p role="status" className="mt-2 text-sm text-crit-700">
+              {bootNote}. Medication search is unavailable until the backend is running.
+            </p>
+          )}
         </div>
       </div>
 
@@ -134,6 +169,8 @@ export function ReviewPage() {
             selectedIds={medicationIds}
             onAdd={(id) => toggleMedication(id, true)}
             onRemove={(id) => toggleMedication(id, false)}
+            candidates={live ? search.results : undefined}
+            onQueryChange={live ? (q) => search.search(q, remember) : undefined}
           />
           <RunBar medicationCount={medicationIds.length} loading={state === 'loading'} onRun={() => run(false)} />
         </div>

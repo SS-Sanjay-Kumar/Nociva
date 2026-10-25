@@ -11,11 +11,16 @@ export function MedsCard({
   selectedIds,
   onAdd,
   onRemove,
+  candidates,
+  onQueryChange,
 }: {
   medications: Medication[]
   selectedIds: string[]
   onAdd: (medicationId: string) => void
   onRemove: (medicationId: string) => void
+  /** Live mode: server search results offered in the combobox (medications still resolves selected ids). */
+  candidates?: Medication[]
+  onQueryChange?: (query: string) => void
 }) {
   const selected = selectedIds
     .map((id) => medications.find((m) => m.id === id))
@@ -29,7 +34,12 @@ export function MedsCard({
         <Chip>{selected.length} selected</Chip>
       </CardHeader>
 
-      <MedicationCombobox medications={medications} selectedIds={selectedIds} onAdd={onAdd} />
+      <MedicationCombobox
+        medications={candidates ?? medications}
+        selectedIds={selectedIds}
+        onAdd={onAdd}
+        onQueryChange={onQueryChange}
+      />
 
       <div className="flex flex-col gap-2 p-3">
         {selected.length === 0 && <Fine className="px-0.5 py-1.5">No medications yet. Search above to add at least two.</Fine>}

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import type { AssessmentResult, PatientProfile, RequestState } from '../../types'
+import type { AssessmentResult, Medication, PatientProfile, RequestState } from '../../types'
 import { runAssessment } from './api'
 import { ContractError } from '../../contracts/validate'
 
@@ -11,7 +11,8 @@ export function useMedicationAssessment() {
   const [ranKey, setRanKey] = useState<string | null>(null)
 
   const submit = useCallback(
-    async (patient: PatientProfile, medicationIds: string[], options: { simulateError?: boolean } = {}) => {
+    async (patient: PatientProfile, medications: Medication[], options: { simulateError?: boolean } = {}) => {
+      const medicationIds = medications.map((m) => m.id)
       if (medicationIds.length < 2) {
         setState('unsupported')
         setErrorMessage('Add at least two medications to run.')
@@ -22,7 +23,7 @@ export function useMedicationAssessment() {
       setErrorMessage(null)
       setContractErrorPath(null)
       try {
-        const data = await runAssessment(patient, medicationIds, options)
+        const data = await runAssessment(patient, medications, options)
         setResult(data)
         setState('success')
         setRanKey(`${patient.id}|${medicationIds.join(',')}`)

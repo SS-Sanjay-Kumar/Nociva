@@ -8,7 +8,7 @@ import { COPY } from '../copy'
  * verdict — an unreachable engine is a distinct state from any of the
  * three documented outcomes.
  */
-export function EnginePane({ onRetry }: { onRetry: () => void }) {
+export function EnginePane({ onRetry, message }: { onRetry: () => void; message?: string }) {
   return (
     <div role="alert" className="flex gap-4 rounded-[var(--radius-lg)] border border-crit-200 bg-crit-50 p-5">
       <AlertCircle size={28} className="flex-none text-crit-700" />
@@ -16,13 +16,15 @@ export function EnginePane({ onRetry }: { onRetry: () => void }) {
         <h2 className="font-display text-[22px] font-extrabold tracking-[-0.01em] text-crit-700">
           {COPY.error.title}
         </h2>
-        <p className="mt-1.5 max-w-[60ch] text-ink-2">{COPY.error.body}</p>
+        <p className="mt-1.5 max-w-[60ch] text-ink-2">
+          {message ? `${message}. ${COPY.error.live}` : COPY.error.body}
+        </p>
         <div className="mt-3.5 flex flex-wrap items-center gap-2">
           <Button variant="primary" size="sm" onClick={onRetry}>
             <RotateCcw size={14} />
             Try again
           </Button>
-          <Chip variant="crit">Error code: ENGINE_TIMEOUT</Chip>
+          {!message && <Chip variant="crit">Error code: ENGINE_TIMEOUT</Chip>}
         </div>
       </div>
     </div>

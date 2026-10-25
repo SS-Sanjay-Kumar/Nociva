@@ -16,7 +16,17 @@ export async function apiRequest<TResponse>(
   schema?: ZodType<TResponse>,
 ): Promise<TResponse> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  let timedOut = false
+  const timeout = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, REQUEST_TIMEOUT_MS)
+  // A caller-supplied signal (e.g. a stale search) aborts this request too.
+  const callerSignal = options.signal
+  if (callerSignal) {
+    if (callerSignal.aborted) controller.abort()
+    else callerSignal.addEventListener('abort', () => controller.abort(), { once: true })
+  }
 
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -48,6 +58,7 @@ export async function apiRequest<TResponse>(
     return schema ? parseWithSchema(schema, data, path) : (data as TResponse)
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
+      if (!timedOut) throw err // aborted by the caller, not a timeout
       const error: ApiError = {
         message: `Request to ${path} timed out after ${REQUEST_TIMEOUT_MS}ms`,
       }
@@ -56,6 +67,7 @@ export async function apiRequest<TResponse>(
     if (err instanceof TypeError) {
       const error: ApiError = {
         message: `Could not reach backend at ${API_BASE_URL}${path}. Is the service running?`,
+        network: true,
       }
       throw error
     }

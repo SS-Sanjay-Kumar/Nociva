@@ -6,10 +6,13 @@ export function MedicationCombobox({
   medications,
   selectedIds,
   onAdd,
+  onQueryChange,
 }: {
   medications: Medication[]
   selectedIds: string[]
   onAdd: (medicationId: string) => void
+  /** Live mode: called on every keystroke so the parent can run a debounced server search. */
+  onQueryChange?: (query: string) => void
 }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
@@ -65,6 +68,7 @@ export function MedicationCombobox({
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
+            onQueryChange?.(e.target.value)
             setOpen(true)
             setHighlighted(0)
           }}

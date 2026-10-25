@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, ExternalLink } from 'lucide-react'
-import type { Association, EvidenceReference } from '../../../types'
+import type { Association, EvidenceReference, LiteratureLink } from '../../../types'
 import { Card, CardHeader, CardTitle } from '../../../components/ui/Card'
 import { Chip } from '../../../components/ui/Chip'
 import { Fine } from '../../../components/ui/Misc'
@@ -31,9 +31,15 @@ function Quote({ text }: { text: string }) {
 }
 
 function uniqueLiterature(associations: Association[]) {
-  const seen = new Map<string, string>()
-  for (const a of associations) for (const l of a.literature ?? []) seen.set(l.pmid, l.url)
-  return [...seen.entries()].sort((x, y) => Number(y[0]) - Number(x[0]))
+  // One entry per PMID; "associated" outranks "ambiguous" when both appear.
+  const seen = new Map<string, LiteratureLink>()
+  for (const a of associations) {
+    for (const l of a.literature ?? []) {
+      const prev = seen.get(l.pmid)
+      if (!prev || (prev.status !== 'associated' && l.status === 'associated')) seen.set(l.pmid, l)
+    }
+  }
+  return [...seen.values()].sort((x, y) => Number(y.pmid) - Number(x.pmid))
 }
 
 export function EvidenceCard({
@@ -84,12 +90,13 @@ export function EvidenceCard({
         {literature.length > 0 && (
           <div className="mt-3 border-t border-line-2 pt-3 text-[12.5px]">
             <span className="font-semibold">Background reading (PubMed): </span>
-            {literature.map(([pmid, url], i) => (
-              <span key={pmid}>
+            {literature.map((l, i) => (
+              <span key={l.pmid}>
                 {i > 0 && ', '}
-                <a href={url} target="_blank" rel="noopener noreferrer" className="text-teal-700 underline">
-                  PMID {pmid}
+                <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-teal-700 underline">
+                  PMID {l.pmid}
                 </a>
+                {l.status && <span className="text-ink-3"> ({l.status})</span>}
               </span>
             ))}
             <Fine>Related literature, not a clinical recommendation.</Fine>

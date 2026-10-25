@@ -17,7 +17,7 @@ export function Topbar({ title }: { title: string }) {
           </Chip>
         ) : (
           <Chip variant="teal" icon={<ShieldCheck size={13} />} className="hidden min-[560px]:inline-flex">
-            Deterministic engine v0.3
+            Guideline engine v1.0 · demo inhibitor list
           </Chip>
         )}
         <Chip variant="amber" icon={<Database size={13} />}>

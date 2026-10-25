@@ -69,6 +69,7 @@ export const EvidenceReferenceSchema = z.object({
 export const LiteratureLinkSchema = z.object({
   pmid: z.string(),
   url: z.string(),
+  status: z.enum(['associated', 'ambiguous']).optional(),
 })
 
 export const AssociationSchema = z.object({

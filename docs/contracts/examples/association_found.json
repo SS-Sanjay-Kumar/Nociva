@@ -73,11 +73,13 @@
         "literature": [
           {
             "pmid": "1000002",
-            "url": "https://pubmed.ncbi.nlm.nih.gov/1000002/"
+            "url": "https://pubmed.ncbi.nlm.nih.gov/1000002/",
+            "status": "associated"
           },
           {
             "pmid": "1000001",
-            "url": "https://pubmed.ncbi.nlm.nih.gov/1000001/"
+            "url": "https://pubmed.ncbi.nlm.nih.gov/1000001/",
+            "status": "ambiguous"
           }
         ]
       }

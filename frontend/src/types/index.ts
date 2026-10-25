@@ -72,6 +72,7 @@ export interface EvidenceReference {
 export interface LiteratureLink {
   pmid: string
   url: string
+  status?: 'associated' | 'ambiguous'
 }
 
 export interface Association {
@@ -235,4 +236,6 @@ export interface ApiError {
   message: string
   detail?: string
   status?: number
+  /** True when the request never reached the server (connection refused, DNS, offline). */
+  network?: boolean
 }

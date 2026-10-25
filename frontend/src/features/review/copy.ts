@@ -24,6 +24,7 @@ export const COPY = {
     footer: 'Verdicts come from a deterministic rules engine. Machine-learning output is never used.',
   },
   error: {
+    live: 'No verdict was produced. This is not a "no association" result. Start the backend (see DEMO.md), then try again.',
     title: 'Rules engine unreachable',
     body:
       'The assessment service did not respond, so no verdict was produced. This is not a "no association" ' +
