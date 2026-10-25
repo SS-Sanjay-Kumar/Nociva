@@ -1,0 +1,23 @@
+{
+  "patientId": "live-smoke-b",
+  "genotypes": [
+    {
+      "gene": "CYP2D6",
+      "phenotype": "normal metabolizer"
+    },
+    {
+      "gene": "CYP2C9",
+      "phenotype": "normal metabolizer"
+    }
+  ],
+  "medications": [
+    {
+      "id": "metoprolol",
+      "name": "Metoprolol"
+    },
+    {
+      "id": "warfarin",
+      "name": "Warfarin"
+    }
+  ]
+}

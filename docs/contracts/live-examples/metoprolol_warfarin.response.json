@@ -1,0 +1,41 @@
+{
+  "patientId": "live-smoke-b",
+  "medications": [
+    {
+      "id": "metoprolol",
+      "name": "Metoprolol"
+    },
+    {
+      "id": "warfarin",
+      "name": "Warfarin"
+    }
+  ],
+  "verdict": {
+    "evidenceStatus": "no_documented_association",
+    "summary": "No documented association was found in the guideline rule set searched for this patient's results and medication list.",
+    "references": [],
+    "limitations": [
+      "Only CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are evaluated.",
+      "Guideline text is quoted as published; this engine gives no dosing or prescribing advice.",
+      "Warfarin dosing also involves VKORC1 and CYP4F2, which this tool does not evaluate.",
+      "Normal-metabolizer recommendations are not evaluated by this engine."
+    ],
+    "checks": [
+      {
+        "label": "CYP2D6 × Metoprolol",
+        "note": "CYP2D6 normal metabolizer: No actionable entry for this phenotype in the guideline summary",
+        "missing": false
+      },
+      {
+        "label": "CYP2C9 × Warfarin",
+        "note": "CYP2C9 normal metabolizer: No actionable entry for this phenotype in the guideline summary",
+        "missing": false
+      }
+    ],
+    "evidenceBasis": "Rule set searched",
+    "engineVersion": "Guideline engine v1.0",
+    "evidenceSnapshot": "ClinPGx guideline annotations, versions per reference"
+  },
+  "generatedAt": "2026-10-25T04:25:23.913824+00:00",
+  "isMock": false
+}

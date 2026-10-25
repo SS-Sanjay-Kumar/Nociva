@@ -1,0 +1,23 @@
+{
+  "patientId": "live-smoke-c",
+  "genotypes": [
+    {
+      "gene": "CYP2D6",
+      "phenotype": "normal metabolizer"
+    },
+    {
+      "gene": "CYP2C9",
+      "phenotype": "intermediate metabolizer"
+    }
+  ],
+  "medications": [
+    {
+      "id": "clopidogrel",
+      "name": "Clopidogrel"
+    },
+    {
+      "id": "omeprazole",
+      "name": "Omeprazole"
+    }
+  ]
+}

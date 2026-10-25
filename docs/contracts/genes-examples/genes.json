@@ -1,0 +1,5 @@
+[
+  { "gene": "CYP2C19", "guidelineCount": 3 },
+  { "gene": "CYP2C9", "guidelineCount": 2 },
+  { "gene": "CYP2D6", "guidelineCount": 9 }
+]

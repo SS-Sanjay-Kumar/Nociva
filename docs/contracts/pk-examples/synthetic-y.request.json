@@ -1,0 +1,21 @@
+{
+  "compoundName": "Synthetic Compound Y",
+  "route": "oral",
+  "doseMg": 250.0,
+  "bioavailability": 0.6,
+  "volumeL": 120.0,
+  "clearanceLPerH": 18.0,
+  "absorptionRatePerH": 0.8,
+  "durationHours": 48.0,
+  "comparison": {
+    "clearanceMultiplier": 1.5,
+    "label": "Hypothetical: clearance increased by 50%"
+  },
+  "monteCarlo": {
+    "enabled": false,
+    "samples": 300,
+    "clearanceCv": 0.3,
+    "volumeCv": 0.2,
+    "seed": 42
+  }
+}

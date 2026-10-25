@@ -1,0 +1,33 @@
+{
+  "patientId": "live-smoke-a",
+  "genotypes": [
+    {
+      "gene": "CYP2D6",
+      "phenotype": "intermediate metabolizer",
+      "diplotype": "*1/*4",
+      "activityScore": 1.0
+    },
+    {
+      "gene": "CYP2C19",
+      "phenotype": "normal metabolizer"
+    },
+    {
+      "gene": "CYP2C9",
+      "phenotype": "normal metabolizer"
+    },
+    {
+      "gene": "CYP3A5",
+      "phenotype": "non expresser"
+    }
+  ],
+  "medications": [
+    {
+      "id": "paroxetine",
+      "name": "Paroxetine"
+    },
+    {
+      "id": "tamoxifen",
+      "name": "Tamoxifen"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "compoundName": "Synthetic Compound X",
+  "route": "oral",
+  "doseMg": 100.0,
+  "bioavailability": 0.8,
+  "volumeL": 50.0,
+  "clearanceLPerH": 10.0,
+  "absorptionRatePerH": 1.2,
+  "durationHours": 24.0,
+  "comparison": {
+    "clearanceMultiplier": 0.7,
+    "label": "Hypothetical: clearance reduced to 70%"
+  },
+  "monteCarlo": {
+    "enabled": true
+  }
+}
