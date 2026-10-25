@@ -1,26 +1,87 @@
 {
   "patientId": "patient-a",
   "medications": [
-    { "id": "med-paroxetine", "name": "Paroxetine", "rxnormId": "32937", "drugClass": "SSRI antidepressant · strong CYP2D6 inhibitor" },
-    { "id": "med-tamoxifen", "name": "Tamoxifen", "rxnormId": "10324", "drugClass": "SERM · CYP2D6 prodrug" }
+    {
+      "id": "med-paroxetine",
+      "name": "Paroxetine",
+      "rxnormId": "32937",
+      "drugClass": "SSRI antidepressant · strong CYP2D6 inhibitor"
+    },
+    {
+      "id": "med-tamoxifen",
+      "name": "Tamoxifen",
+      "rxnormId": "10324",
+      "drugClass": "SERM · CYP2D6 prodrug"
+    }
   ],
   "verdict": {
     "evidenceStatus": "association_found",
     "summary": "Paroxetine is a strong CYP2D6 inhibitor, and tamoxifen needs CYP2D6 to form its active metabolite, endoxifen. With intermediate metabolizer CYP2D6 status, this combination is documented to lower endoxifen formation.",
     "references": [
-      { "source": "CPIC", "citation": "Goetz MP, et al. CPIC Guideline for CYP2D6 and Tamoxifen Therapy.", "url": "https://cpicpgx.org/guidelines/" }
+      {
+        "source": "CPIC",
+        "citation": "Goetz MP, et al. CPIC Guideline for CYP2D6 and Tamoxifen Therapy.",
+        "url": "https://cpicpgx.org/guidelines/",
+        "guidelineId": "EXAMPLE-0001",
+        "annotationVersion": "3",
+        "lastUpdated": "2022-02-10",
+        "quote": "Synthetic example text standing in for a plain-text guideline summary. Synthetic example text standing in for a plain-text guideline summary. Synthetic example text standing in for a plain-text guideline summary. Synthetic example text standing in for a plain-text guideline summary. Synthetic example text standing in for a plain-text guideline summary. Synthetic example text standing in for a plain-text guideline summary. "
+      }
     ],
-    "limitations": ["Demonstration fixture — not a live clinical decision."],
+    "limitations": [
+      "Demonstration fixture — not a live clinical decision."
+    ],
     "mechanism": [
-      { "kind": "gene", "label": "Patient genotype", "title": "CYP2D6 *1/*4", "sub": "intermediate metabolizer · activity score 1.0" },
-      { "kind": "inhibitor", "label": "Inhibitor on list", "title": "Paroxetine", "sub": "Strong CYP2D6 inhibitor." },
-      { "kind": "substrate", "label": "Substrate", "title": "Tamoxifen", "sub": "Converted to endoxifen by CYP2D6." },
-      { "kind": "effect", "label": "Documented effect", "title": "Lower endoxifen exposure", "sub": "Reduced formation of the active metabolite." }
+      {
+        "kind": "gene",
+        "label": "Patient genotype",
+        "title": "CYP2D6 *1/*4",
+        "sub": "intermediate metabolizer · activity score 1.0"
+      },
+      {
+        "kind": "inhibitor",
+        "label": "Inhibitor on list",
+        "title": "Paroxetine",
+        "sub": "Strong CYP2D6 inhibitor."
+      },
+      {
+        "kind": "substrate",
+        "label": "Substrate",
+        "title": "Tamoxifen",
+        "sub": "Converted to endoxifen by CYP2D6."
+      },
+      {
+        "kind": "effect",
+        "label": "Documented effect",
+        "title": "Lower endoxifen exposure",
+        "sub": "Reduced formation of the active metabolite."
+      }
     ],
     "evidenceBasis": "Guideline-supported",
     "ruleId": "GDD-2D6-TAM-01",
     "engineVersion": "Rules engine v0.3 (demo)",
-    "evidenceSnapshot": "2026-10-20"
+    "evidenceSnapshot": "2026-10-20",
+    "associations": [
+      {
+        "ruleId": "GG-CYP2D6-TAMOXIFEN",
+        "kind": "gene_drug",
+        "gene": "CYP2D6",
+        "medication": "tamoxifen",
+        "guidelineIds": [
+          "EXAMPLE-0001"
+        ],
+        "literature": [
+          {
+            "pmid": "1000002",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/1000002/"
+          },
+          {
+            "pmid": "1000001",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/1000001/"
+          }
+        ]
+      }
+    ]
   },
   "generatedAt": "2026-10-24T00:00:00.000Z",
   "isMock": true

@@ -102,7 +102,7 @@ export function ReviewPage() {
         <VerdictCard result={result} patient={patient} />
         <MechanismCard mechanism={result.verdict.mechanism} checks={result.verdict.checks} />
         <div className="grid grid-cols-1 gap-4 min-[901px]:grid-cols-2">
-          <EvidenceCard references={result.verdict.references} />
+          <EvidenceCard references={result.verdict.references} associations={result.verdict.associations} />
           <LimitsCard missingData={result.verdict.missingData} limitations={result.verdict.limitations} />
         </div>
       </div>

@@ -59,6 +59,27 @@ export const EvidenceReferenceSchema = z.object({
   source: z.string(),
   citation: z.string(),
   url: z.string().optional(),
+  guidelineId: z.string().optional(),
+  annotationVersion: z.string().optional(),
+  lastUpdated: z.string().optional(),
+  /** Plain-text guideline summary (never HTML). */
+  quote: z.string().optional(),
+})
+
+export const LiteratureLinkSchema = z.object({
+  pmid: z.string(),
+  url: z.string(),
+})
+
+export const AssociationSchema = z.object({
+  ruleId: z.string(),
+  kind: z.enum(['gene_drug', 'gene_drug_drug']),
+  gene: z.string(),
+  medication: z.string(),
+  inhibitor: z.string().optional(),
+  guidelineIds: z.array(z.string()),
+  /** Related reading only; never used to change the verdict. */
+  literature: z.array(LiteratureLinkSchema).optional(),
 })
 
 export const FlowNodeSchema = z.object({
@@ -83,6 +104,7 @@ export const ClinicalVerdictSchema = z.object({
   mechanism: z.array(FlowNodeSchema).optional(),
   checks: z.array(CheckItemSchema).optional(),
   missingData: z.array(z.string()).optional(),
+  associations: z.array(AssociationSchema).optional(),
   evidenceBasis: z.string().optional(),
   ruleId: z.string().optional(),
   engineVersion: z.string().optional(),

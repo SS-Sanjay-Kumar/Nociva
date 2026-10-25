@@ -63,6 +63,18 @@
               },
               "url": {
                 "type": "string"
+              },
+              "guidelineId": {
+                "type": "string"
+              },
+              "annotationVersion": {
+                "type": "string"
+              },
+              "lastUpdated": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string"
               }
             },
             "required": [
@@ -140,6 +152,66 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "associations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ruleId": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "gene_drug",
+                  "gene_drug_drug"
+                ]
+              },
+              "gene": {
+                "type": "string"
+              },
+              "medication": {
+                "type": "string"
+              },
+              "inhibitor": {
+                "type": "string"
+              },
+              "guidelineIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "literature": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pmid": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "pmid",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "ruleId",
+              "kind",
+              "gene",
+              "medication",
+              "guidelineIds"
+            ],
+            "additionalProperties": false
           }
         },
         "evidenceBasis": {

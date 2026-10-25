@@ -62,6 +62,26 @@ export interface EvidenceReference {
   source: string
   citation: string
   url?: string
+  guidelineId?: string
+  annotationVersion?: string
+  lastUpdated?: string
+  /** Plain-text guideline summary (never HTML). */
+  quote?: string
+}
+
+export interface LiteratureLink {
+  pmid: string
+  url: string
+}
+
+export interface Association {
+  ruleId: string
+  kind: 'gene_drug' | 'gene_drug_drug'
+  gene: string
+  medication: string
+  inhibitor?: string
+  guidelineIds: string[]
+  literature?: LiteratureLink[]
 }
 
 export type FlowNodeKind = 'gene' | 'inhibitor' | 'substrate' | 'effect' | 'unknown' | 'missing'
@@ -97,6 +117,7 @@ export interface ClinicalVerdict {
   checks?: CheckItem[]
   /** Data the engine would have needed but did not have, distinct from `limitations`. */
   missingData?: string[]
+  associations?: Association[]
   evidenceBasis?: string
   ruleId?: string
   engineVersion?: string
