@@ -11,7 +11,7 @@ from ml.train_cyp2d6_model import scaffold_split
 def test_no_structure_overlap_across_splits():
     df, _ = load_clean_dataset()
     # Use a slice for test speed; full-dataset split is exercised by the
-    # real training run (backend/models/cyp2d6_model_metadata.json).
+    # real training run (models/molecular/cyp2d6_model_metadata.json).
     sample = df.sample(n=2000, random_state=42).reset_index(drop=True)
     smiles = sample["canonical_smiles"].tolist()
     labels = sample["label"].to_numpy()

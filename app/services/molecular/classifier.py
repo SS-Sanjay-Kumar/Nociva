@@ -2,7 +2,7 @@
 CYP2D6 inhibition classifier inference service.
 
 Loads the locally-trained Random Forest model and metadata saved by
-backend/ml/train_cyp2d6_model.py. Only loads artifacts created locally by
+ml/train_cyp2d6_model.py. Only loads artifacts created locally by
 this project (no remote model downloads at inference time).
 """
 
@@ -18,7 +18,7 @@ import numpy as np
 from .features import fingerprint_metadata
 from .similarity import _load_index, tanimoto_bulk
 
-MODELS_DIR = Path(__file__).resolve().parents[3] / "models"
+MODELS_DIR = Path(__file__).resolve().parents[3] / "models" / "molecular"
 MODEL_PATH = MODELS_DIR / "cyp2d6_random_forest.joblib"
 METADATA_PATH = MODELS_DIR / "cyp2d6_model_metadata.json"
 

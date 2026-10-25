@@ -14,7 +14,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
 
-MODELS_DIR = Path(__file__).resolve().parents[3] / "models"
+MODELS_DIR = Path(__file__).resolve().parents[3] / "models" / "molecular"
 INDEX_PATH = MODELS_DIR / "reference_index.joblib"
 
 TOP_K = 5

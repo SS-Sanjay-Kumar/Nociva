@@ -10,7 +10,7 @@ Pipeline:
      confusion matrix. Decision threshold is tuned on the validation set.
   6. Save model + fingerprint metadata + metrics + dataset provenance.
 
-Run from backend/ with the venv active:
+Run from the repo root with the venv active:
     python ml/train_cyp2d6_model.py
 """
 
@@ -34,15 +34,15 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-BACKEND_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(BACKEND_ROOT))
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
 
 from app.services.molecular.features import fingerprint_metadata, smiles_to_fingerprint  # noqa: E402
 from ml.data_prep import SPLIT_METHOD, load_clean_dataset, scaffold_split  # noqa: E402
 
 RANDOM_SEED = 42
 N_ESTIMATORS = 120
-MODELS_DIR = BACKEND_ROOT / "models"
+MODELS_DIR = REPO_ROOT / "models" / "molecular"
 MODEL_PATH = MODELS_DIR / "cyp2d6_random_forest.joblib"
 METADATA_PATH = MODELS_DIR / "cyp2d6_model_metadata.json"
 

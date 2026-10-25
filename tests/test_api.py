@@ -1,14 +1,14 @@
 from fastapi.testclient import TestClient
 
-from app.main import app
+from fastapi import FastAPI
 
+from app.api.v1.endpoints.molecular import router as molecular_router
+
+# Standalone app with only the molecular router: never imports app.main,
+# app.core.config or any database code.
+app = FastAPI()
+app.include_router(molecular_router)
 client = TestClient(app)
-
-
-def test_health():
-    r = client.get("/health")
-    assert r.status_code == 200
-    assert r.json() == {"status": "ok"}
 
 
 def test_model_info_shape():

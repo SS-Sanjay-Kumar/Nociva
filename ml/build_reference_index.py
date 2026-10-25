@@ -5,7 +5,7 @@ Molecular Explorer.
 
 The index is built from the classifier's TRAINING SPLIT ONLY, using the
 exact same scaffold split (and therefore the exact same compounds) as
-backend/ml/train_cyp2d6_model.py. This makes "training data" in the UI mean
+ml/train_cyp2d6_model.py. This makes "training data" in the UI mean
 what it says: neighbours, inTrainingSet, and the "Similar to training data"
 heuristic are all checked against the same compounds the model was fit on
 -- never the validation or held-out test split.
@@ -15,7 +15,7 @@ names -- never invent names for unnamed compounds. Fingerprints are
 precomputed and cached so API requests don't recompute thousands of
 fingerprints per call.
 
-Run from backend/ with the venv active (after training the model, so the
+Run from the repo root with the venv active (after training the model, so the
 two scripts' splits are both loggable from the same run):
     python ml/train_cyp2d6_model.py
     python ml/build_reference_index.py
@@ -29,13 +29,13 @@ from pathlib import Path
 import joblib
 import numpy as np
 
-BACKEND_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(BACKEND_ROOT))
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
 
 from app.services.molecular.features import fingerprint_metadata, smiles_to_fingerprint  # noqa: E402
 from ml.data_prep import SPLIT_METHOD, load_clean_dataset, scaffold_split  # noqa: E402
 
-MODELS_DIR = BACKEND_ROOT / "models"
+MODELS_DIR = REPO_ROOT / "models" / "molecular"
 INDEX_PATH = MODELS_DIR / "reference_index.joblib"
 
 

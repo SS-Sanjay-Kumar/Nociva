@@ -4,11 +4,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
-if [ ! -d "$BACKEND_DIR/.venv" ]; then
-  echo "backend/.venv not found — run ./scripts/setup.sh first." >&2
+if [ ! -d "$ROOT_DIR/.venv" ]; then
+  echo ".venv not found — run ./scripts/setup.sh first." >&2
   exit 1
 fi
 
@@ -26,7 +25,7 @@ trap cleanup EXIT INT TERM
 
 echo "==> Starting backend on :8000"
 (
-  cd "$BACKEND_DIR"
+  cd "$ROOT_DIR"
   # shellcheck disable=SC1091
   source .venv/bin/activate
   exec uvicorn app.main:app --reload --port 8000

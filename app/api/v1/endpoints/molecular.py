@@ -4,12 +4,12 @@ Stream 1: Molecular Intelligence Engine router.
 Independent, self-contained APIRouter — mount it onto the shared FastAPI
 app with a single line (see INTEGRATION.md):
 
-    from app.routers.molecular import router as molecular_router
+    from app.api.v1.endpoints.molecular import router as molecular_router
     app.include_router(molecular_router)
 
 Nothing in this module reaches into another team's routes, database
 connections, or app state. It reads its own model/index artifacts from
-backend/models/ (produced by backend/ml/*.py) and nothing else.
+models/molecular/ (produced by ml/*.py) and nothing else.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from fastapi import APIRouter
 from rdkit import Chem
 from rdkit.Chem import Descriptors, rdMolDescriptors
 
-from app.schemas.molecular import (
+from app.models.molecular import (
     Cyp2d6Prediction,
     Cyp2d6Result,
     DatasetInfo,

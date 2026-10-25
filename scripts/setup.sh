@@ -5,28 +5,27 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 echo "==> Backend: virtualenv"
-if [ ! -d "$BACKEND_DIR/.venv" ]; then
-  python3 -m venv "$BACKEND_DIR/.venv"
+if [ ! -d "$ROOT_DIR/.venv" ]; then
+  python3 -m venv "$ROOT_DIR/.venv"
 else
   echo "    .venv already exists, skipping creation"
 fi
 
 # shellcheck disable=SC1091
-source "$BACKEND_DIR/.venv/bin/activate"
+source "$ROOT_DIR/.venv/bin/activate"
 
 echo "==> Backend: pip install -r requirements.txt"
 pip install -q --upgrade pip
-pip install -q -r "$BACKEND_DIR/requirements.txt"
+pip install -q -r "$ROOT_DIR/requirements.txt"
 
-MODEL_FILE="$BACKEND_DIR/models/cyp2d6_random_forest.joblib"
-METADATA_FILE="$BACKEND_DIR/models/cyp2d6_model_metadata.json"
-INDEX_FILE="$BACKEND_DIR/models/reference_index.joblib"
+MODEL_FILE="$ROOT_DIR/models/molecular/cyp2d6_random_forest.joblib"
+METADATA_FILE="$ROOT_DIR/models/molecular/cyp2d6_model_metadata.json"
+INDEX_FILE="$ROOT_DIR/models/molecular/reference_index.joblib"
 
-cd "$BACKEND_DIR"
+cd "$ROOT_DIR"
 
 if [ -f "$MODEL_FILE" ] && [ -f "$METADATA_FILE" ]; then
   echo "==> Backend: trained model already present, skipping train_cyp2d6_model.py"

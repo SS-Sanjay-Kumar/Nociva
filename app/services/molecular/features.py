@@ -3,7 +3,7 @@ Shared fingerprint feature extraction.
 
 CRITICAL: training and inference must use identical fingerprint settings.
 This module is the single source of truth for both; it is imported by
-backend/ml/train_cyp2d6_model.py and by the FastAPI inference service.
+ml/train_cyp2d6_model.py and by the FastAPI inference service.
 """
 
 from __future__ import annotations
