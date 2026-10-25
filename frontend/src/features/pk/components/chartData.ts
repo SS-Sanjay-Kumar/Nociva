@@ -11,8 +11,13 @@ export interface ChartRow {
 export const BASELINE_COLOR = '#1d4ed8'
 export const ALTERED_COLOR = '#b45309'
 
+/** The altered series name always says hypothetical: the user's label is used as-is if it already does. */
+export function hypotheticalName(label: string): string {
+  return /hypothetical/i.test(label) ? label : `${label} (hypothetical)`
+}
+
 export function alteredLegend(result: SimulateResponse): string | null {
-  return result.altered ? `${result.altered.label} (hypothetical)` : null
+  return result.altered ? hypotheticalName(result.altered.label) : null
 }
 
 /** One row per backend time point. Every value comes from the response; nothing is computed here. */

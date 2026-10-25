@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expectNoA11yViolations } from '../../testing/a11y'
 import { PkPage } from './PkPage'
-import { alteredLegend, buildChartData } from './components/chartData'
+import { alteredLegend, buildChartData, hypotheticalName } from './components/chartData'
 import { SimulateResponseSchema } from '../../contracts/pk'
 import presets from '../../../../docs/contracts/pk-examples/presets.json'
 import plain from '../../../../docs/contracts/pk-examples/synthetic-x.response.json'
@@ -101,7 +101,7 @@ describe('PK page', () => {
     const region = screen.getByRole('region', { name: 'Plotted values table' })
     const bodyRows = within(region).getAllByRole('row').length - 1
     expect(bodyRows).toBe(plain.timeHours.length)
-    expect(within(region).getByRole('columnheader', { name: /\(hypothetical\) \(mg\/L\)/ })).toBeTruthy()
+    expect(within(region).getByRole('columnheader', { name: /hypothetical.*\(mg\/L\)/i })).toBeTruthy()
   })
 
   it('shows Monte Carlo bands only with the demonstration label', async () => {
@@ -139,6 +139,14 @@ describe('chart data', () => {
     const r = SimulateResponseSchema.parse({ ...plain, altered: { ...plain.altered, label: 'Anything' } })
     expect(alteredLegend(r)).toBe('Anything (hypothetical)')
     expect(alteredLegend(SimulateResponseSchema.parse({ ...plain, altered: undefined }))).toBeNull()
+  })
+
+  it('appends "(hypothetical)" only when the label does not already say so (case-insensitive)', () => {
+    expect(hypotheticalName('Slow metabolizer')).toBe('Slow metabolizer (hypothetical)')
+    expect(hypotheticalName('Hypothetical: clearance × 0.5')).toBe('Hypothetical: clearance × 0.5')
+    expect(hypotheticalName('my HYPOTHETICAL case')).toBe('my HYPOTHETICAL case')
+    const r = SimulateResponseSchema.parse(plain) // fixture label already says "Hypothetical"
+    expect(alteredLegend(r)).toBe(plain.altered.label)
   })
 
   it('builds one row per time point straight from the response', () => {
