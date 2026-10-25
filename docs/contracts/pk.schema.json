@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "modelVersion": {
+      "type": "string"
+    },
+    "compoundName": {
+      "type": "string"
+    },
+    "route": {
+      "type": "string"
+    },
+    "doseMg": {
+      "type": "number"
+    },
+    "durationHours": {
+      "type": "number"
+    },
+    "units": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string"
+        },
+        "concentration": {
+          "type": "string"
+        },
+        "auc": {
+          "type": "string"
+        },
+        "dose": {
+          "type": "string"
+        },
+        "volume": {
+          "type": "string"
+        },
+        "clearance": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "time",
+        "concentration",
+        "auc",
+        "dose",
+        "volume",
+        "clearance"
+      ],
+      "additionalProperties": false
+    },
+    "timeHours": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "hypothetical": {
+          "type": "boolean"
+        },
+        "clearanceLPerH": {
+          "type": "number"
+        },
+        "concentrationMgPerL": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "cmaxMgPerL": {
+              "type": "number"
+            },
+            "tmaxH": {
+              "type": "number"
+            },
+            "aucMgHPerL": {
+              "type": "number"
+            },
+            "halfLifeH": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "cmaxMgPerL",
+            "tmaxH",
+            "aucMgHPerL",
+            "halfLifeH"
+          ],
+          "additionalProperties": false
+        },
+        "relativeExposure": {
+          "type": "object",
+          "properties": {
+            "aucRatio": {
+              "type": "number"
+            },
+            "aucPercentChange": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "label",
+        "hypothetical",
+        "clearanceLPerH",
+        "concentrationMgPerL",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "altered": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "hypothetical": {
+          "type": "boolean"
+        },
+        "clearanceLPerH": {
+          "type": "number"
+        },
+        "concentrationMgPerL": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "cmaxMgPerL": {
+              "type": "number"
+            },
+            "tmaxH": {
+              "type": "number"
+            },
+            "aucMgHPerL": {
+              "type": "number"
+            },
+            "halfLifeH": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "cmaxMgPerL",
+            "tmaxH",
+            "aucMgHPerL",
+            "halfLifeH"
+          ],
+          "additionalProperties": false
+        },
+        "relativeExposure": {
+          "type": "object",
+          "properties": {
+            "aucRatio": {
+              "type": "number"
+            },
+            "aucPercentChange": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "label",
+        "hypothetical",
+        "clearanceLPerH",
+        "concentrationMgPerL",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "monteCarlo": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "samples": {
+          "type": "number"
+        },
+        "clearanceCv": {
+          "type": "number"
+        },
+        "volumeCv": {
+          "type": "number"
+        },
+        "seed": {
+          "type": "number"
+        },
+        "baseline": {
+          "type": "object",
+          "properties": {
+            "concentrationBands": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "p50": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "p95": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            },
+            "cmaxMgPerL": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            },
+            "aucMgHPerL": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "concentrationBands",
+            "cmaxMgPerL",
+            "aucMgHPerL"
+          ],
+          "additionalProperties": false
+        },
+        "altered": {
+          "type": "object",
+          "properties": {
+            "concentrationBands": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "p50": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "p95": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            },
+            "cmaxMgPerL": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            },
+            "aucMgHPerL": {
+              "type": "object",
+              "properties": {
+                "p5": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "p5",
+                "p50",
+                "p95"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "concentrationBands",
+            "cmaxMgPerL",
+            "aucMgHPerL"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "label",
+        "samples",
+        "clearanceCv",
+        "volumeCv",
+        "seed",
+        "baseline"
+      ],
+      "additionalProperties": false
+    },
+    "interpretation": {
+      "type": "string"
+    },
+    "contextual": {
+      "type": "object",
+      "properties": {
+        "ageYears": {
+          "type": "number"
+        },
+        "weightKg": {
+          "type": "number"
+        },
+        "egfr": {
+          "type": "number"
+        },
+        "cypPhenotype": {
+          "type": "string"
+        },
+        "concomitantMedication": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "note"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "synthetic": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "synthetic",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validationStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "modelVersion",
+    "compoundName",
+    "route",
+    "doseMg",
+    "durationHours",
+    "units",
+    "timeHours",
+    "baseline",
+    "interpretation",
+    "provenance",
+    "assumptions",
+    "limitations",
+    "validationStatus"
+  ],
+  "additionalProperties": false
+}

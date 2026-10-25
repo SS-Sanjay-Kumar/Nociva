@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "schema:review": "node scripts/generate-review-schema.ts"
+    "schema:review": "node scripts/generate-review-schema.ts",
+    "schema:pk": "node scripts/generate-pk-schema.ts"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",
@@ -19,6 +20,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4",
+    "recharts": "3.10.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

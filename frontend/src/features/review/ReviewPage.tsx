@@ -21,7 +21,7 @@ import { EvidenceCard } from './components/EvidenceCard'
 import { LimitsCard } from './components/LimitsCard'
 import { StaleBanner } from './components/StaleBanner'
 import { ExplorerLinkCard } from './components/ExplorerLinkCard'
-import { PKSlot } from './components/PKSlot'
+import { PkLinkCard } from './components/PkLinkCard'
 import { Footer } from '../../components/shell/Footer'
 import { ContractErrorPane } from '../../components/ui/ContractErrorPane'
 
@@ -178,7 +178,7 @@ export function ReviewPage() {
           {pane}
           {errorMessage && state === 'unsupported' && <p className="text-sm text-ink-3">{errorMessage}</p>}
           <ExplorerLinkCard />
-          <PKSlot patientId={patient.id} medicationIds={medicationIds} />
+          <PkLinkCard />
         </div>
       </div>
 

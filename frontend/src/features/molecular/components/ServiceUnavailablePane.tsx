@@ -11,7 +11,7 @@ export function ServiceUnavailablePane({ message }: { message: string }) {
         <p className="mt-1.5 max-w-[60ch] text-ink-2">{message}</p>
         <p className="mt-3 text-[13px] text-ink-3">Start it with, from the repo root:</p>
         <pre className="mt-1.5 overflow-x-auto rounded-lg border border-line-2 bg-surface-2 p-3 font-mono text-[12.5px] text-ink-2">
-          {'cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000'}
+          {'source .venv/bin/activate && uvicorn app.main:app --reload --port 8000'}
         </pre>
       </div>
     </div>

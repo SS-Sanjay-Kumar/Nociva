@@ -22,7 +22,14 @@ export function Sidebar() {
           tagTitle="Experimental"
           tagVariant="exp"
         />
-        <NavItem icon={<LineChart size={18} />} label="PK simulation" tag="Soon" tagTitle="Coming soon" tagVariant="soon" disabled />
+        <NavItem
+          to="/pk"
+          icon={<LineChart size={18} />}
+          label="PK simulation"
+          tag="SIM"
+          tagTitle="Simulation (experimental)"
+          tagVariant="exp"
+        />
       </nav>
 
       <div className="mt-auto flex flex-col gap-3 rounded-xl border border-white/10 p-3.5 text-xs text-navy-300 min-[721px]:max-[1100px]:hidden max-[720px]:hidden">
