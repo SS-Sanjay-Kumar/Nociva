@@ -1,0 +1,28 @@
+{
+  "patientId": "patient-c",
+  "medications": [
+    { "id": "med-clopidogrel", "name": "Clopidogrel", "rxnormId": "32968", "drugClass": "Antiplatelet · CYP2C19 prodrug" },
+    { "id": "med-omeprazole", "name": "Omeprazole", "rxnormId": "7646", "drugClass": "Proton pump inhibitor · CYP2C19 substrate and inhibitor" }
+  ],
+  "verdict": {
+    "evidenceStatus": "insufficient_evidence",
+    "summary": "A drug-drug association between omeprazole and clopidogrel is documented, but this patient has no CYP2C19 result. The engine cannot assess how their genotype changes it.",
+    "references": [
+      { "source": "CPIC", "citation": "Lee CR, et al. CPIC Guideline for CYP2C19 and Clopidogrel Therapy, 2022 update.", "url": "https://cpicpgx.org/guidelines/" }
+    ],
+    "limitations": ["Demonstration fixture — not a live clinical decision.", "This is not a finding of no association."],
+    "mechanism": [
+      { "kind": "missing", "label": "Patient genotype", "title": "CYP2C19: not tested", "sub": "No result on file. The gene-dependent part of the rule cannot be evaluated." },
+      { "kind": "inhibitor", "label": "Inhibitor on list", "title": "Omeprazole", "sub": "Inhibits CYP2C19." },
+      { "kind": "substrate", "label": "Substrate", "title": "Clopidogrel", "sub": "Prodrug activated by CYP2C19." },
+      { "kind": "unknown", "label": "Documented effect", "title": "Cannot be graded", "sub": "The size of the effect depends on the missing result." }
+    ],
+    "missingData": ["CYP2C19 genotype or phenotype is not available for this patient."],
+    "evidenceBasis": "Incomplete input",
+    "ruleId": "GDD-2C19-CLO-01",
+    "engineVersion": "Rules engine v0.3 (demo)",
+    "evidenceSnapshot": "2026-10-20"
+  },
+  "generatedAt": "2026-10-24T00:00:00.000Z",
+  "isMock": true
+}

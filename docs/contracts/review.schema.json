@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "patientId": {
+      "type": "string"
+    },
+    "medications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rxnormId": {
+            "type": "string"
+          },
+          "smiles": {
+            "type": "string"
+          },
+          "drugClass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "properties": {
+        "evidenceStatus": {
+          "type": "string",
+          "enum": [
+            "association_found",
+            "no_documented_association",
+            "insufficient_evidence"
+          ]
+        },
+        "summary": {
+          "type": "string"
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "citation": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "citation"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mechanism": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "gene",
+                  "inhibitor",
+                  "substrate",
+                  "effect",
+                  "unknown",
+                  "missing"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "sub": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "title",
+              "sub"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "missing": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "label",
+              "note",
+              "missing"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "missingData": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidenceBasis": {
+          "type": "string"
+        },
+        "ruleId": {
+          "type": "string"
+        },
+        "engineVersion": {
+          "type": "string"
+        },
+        "evidenceSnapshot": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidenceStatus",
+        "summary",
+        "references",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "isMock": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "patientId",
+    "medications",
+    "verdict",
+    "generatedAt",
+    "isMock"
+  ],
+  "additionalProperties": false
+}

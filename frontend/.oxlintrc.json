@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "overrides": [
+    {
+      "files": ["**/features/review/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/molecular/**"],
+                "message": "features/review must not import from features/molecular. The only permitted bridge is a navigation link (react-router Link)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/features/molecular/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/review/**"],
+                "message": "features/molecular must not import from features/review. The only permitted bridge is a navigation link (react-router Link)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
