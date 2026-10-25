@@ -13,7 +13,7 @@ export function MlPredictionCard({ result, modelInfo }: { result: MolecularAnaly
         <div className="p-4 text-sm text-ink-2">
           <b id="ml-title">Model not trained yet.</b> Train it with{' '}
           <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[12.5px]">
-            backend/ml/train_cyp2d6_model.py
+            ml/train_cyp2d6_model.py
           </code>{' '}
           to enable this prediction.
         </div>

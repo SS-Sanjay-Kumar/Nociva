@@ -1,7 +1,7 @@
 /**
  * Safety-critical copy, hard-coded here per GENECOLLISION_HANDOFF.md section 7.
  * These strings are rendered unconditionally for their evidence status and are
- * NEVER derived from backend/mock verdict text, so a careless fixture change
+ * NEVER derived from backend or mock verdict text, so a careless fixture change
  * can't accidentally soften or remove a safety callout.
  */
 export const COPY = {
