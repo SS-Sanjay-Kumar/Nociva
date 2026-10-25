@@ -66,8 +66,8 @@
       {
         "kind": "effect",
         "label": "Guideline text (quoted)",
-        "title": "CPIC: Annotation of CPIC Guideline for tamoxifen and CYP2D6",
-        "sub": "“The CPIC Dosing Guideline for tamoxifen recommends the use of alternative hormonal therapy such as an aromatase inhibitor for postmenopausal women or aromatase inhibitor along with ovarian function suppression in premenopausal women for CYP2D6 poor metabolizer, if aromatase inhibitor use is not contraindicated. For CYP2D6 intermediate metabolizers the recommendation is to consider the recommendations stated for the CYP2D6 poor metabolizer. If aromatase inhibitor use is contraindicated, consideration should be given to use a higher but FDA approved tamoxifen dose for CYP2D6 intermediate metabolizers. For poor metabolizer, higher dose tamoxifen (40 mg/day) increases but does not normalize endoxifen concentrations and can be considered if there are contraindications to aromatase inhibitor therapy. CPIC has updated the CYP2D6 genotype-phenotype translation in all supplemental files since the guideline was published.”"
+        "title": "DPWG: Annotation of DPWG Guideline for tamoxifen and CYP2D6",
+        "sub": "“For CYP2D6 poor and intermediate metabolizers, consider an alternative medication or a dose increase. For intermediate metabolizers, avoid concomitant CYP2D6 inhibitor use.”"
       }
     ],
     "checks": [
@@ -92,6 +92,33 @@
           "PA166176068",
           "PA166181721",
           "PA166104966"
+        ],
+        "literature": [
+          {
+            "pmid": "42380819",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42380819/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41862488",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41862488/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41259728",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41259728/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41036998",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41036998/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "40452016",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40452016/",
+            "status": "ambiguous"
+          }
         ]
       },
       {
@@ -101,7 +128,34 @@
         "medication": "tamoxifen",
         "inhibitor": "paroxetine",
         "guidelineIds": [
-          "PA166176068"
+          "PA166104966"
+        ],
+        "literature": [
+          {
+            "pmid": "42380819",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42380819/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41862488",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41862488/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41259728",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41259728/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "41036998",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41036998/",
+            "status": "ambiguous"
+          },
+          {
+            "pmid": "40452016",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40452016/",
+            "status": "ambiguous"
+          }
         ]
       }
     ],
@@ -110,6 +164,6 @@
     "engineVersion": "Guideline engine v1.0",
     "evidenceSnapshot": "ClinPGx guideline annotations, versions per reference"
   },
-  "generatedAt": "2026-10-25T03:55:34.945582+00:00",
+  "generatedAt": "2026-10-25T04:14:54.494724+00:00",
   "isMock": false
 }

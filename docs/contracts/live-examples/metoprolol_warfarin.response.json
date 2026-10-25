@@ -17,6 +17,7 @@
     "limitations": [
       "Only CYP2D6, CYP2C19, CYP2C9 and CYP3A5 are evaluated.",
       "Guideline text is quoted as published; this engine gives no dosing or prescribing advice.",
+      "Warfarin dosing also involves VKORC1 and CYP4F2, which this tool does not evaluate.",
       "Normal-metabolizer recommendations are not evaluated by this engine."
     ],
     "checks": [
@@ -35,6 +36,6 @@
     "engineVersion": "Guideline engine v1.0",
     "evidenceSnapshot": "ClinPGx guideline annotations, versions per reference"
   },
-  "generatedAt": "2026-10-25T03:55:35.046843+00:00",
+  "generatedAt": "2026-10-25T04:14:54.581728+00:00",
   "isMock": false
 }

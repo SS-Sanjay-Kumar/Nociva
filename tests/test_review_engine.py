@@ -4,8 +4,8 @@ from pathlib import Path
 
 from app.models.review import AssessRequest
 from app.repositories.guideline_rules_repo import parse_pg_array
-from app.services.review_engine import ReviewEngine
-from tests.review_fakes import FakeLiteratureRepo, FakeRulesRepo
+from app.services.review_engine import ReviewEngine, mentions_enzyme_inhibitor
+from tests.review_fakes import SYNTHETIC_ROWS, FakeLiteratureRepo, FakeRulesRepo
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -65,8 +65,27 @@ def test_inhibitor_rule_non_poor_phenotype():
     assert "GDD-CYP2D6-PAROXETINE-TAMOXIFEN" in ids
     kinds = [n.kind for n in v.mechanism]
     assert kinds == ["gene", "inhibitor", "substrate", "effect"]
+    gdd = next(a for a in v.associations if a.ruleId.startswith("GDD"))
+    assert gdd.guidelineIds == ["SYN11"]  # aromatase-inhibitor row SYN1 must not be cited
+    assert "SYNTHETIC: For intermediate" in v.mechanism[3].sub and "aromatase" not in v.mechanism[3].sub
     assert "Demo inhibitor list, not a clinical source" in v.mechanism[1].sub
     assert any("Demo inhibitor list" in lim for lim in v.limitations)
+
+
+def test_aromatase_inhibitor_text_does_not_qualify():
+    assert not mentions_enzyme_inhibitor("Consider an aromatase inhibitor for CYP2D6 poor metabolizers.", "CYP2D6")
+    assert mentions_enzyme_inhibitor("Avoid concomitant CYP2D6 inhibitor use.", "CYP2D6")
+    assert mentions_enzyme_inhibitor("Avoid concomitant inhibitor use.", "CYP2D6")
+    assert mentions_enzyme_inhibitor("Strong CYP2D6 inhibitors raise exposure.", "CYP2D6")
+    assert not mentions_enzyme_inhibitor("Inhibitor use. CYP2D6 poor metabolizers.", "CYP2D6")  # different sentences
+
+
+def test_no_qualifying_row_means_no_inhibitor_association_but_gene_drug_remains():
+    rows = [r for r in SYNTHETIC_ROWS if r[0] != "SYN11"]
+    v = ReviewEngine(FakeRulesRepo(rows)).assess(req([("CYP2D6", "intermediate_metabolizer")], ["paroxetine", "tamoxifen"]))["verdict"]
+    assert [a.ruleId for a in v.associations] == ["GG-CYP2D6-TAMOXIFEN"]
+    assert v.mechanism is None
+    assert not any("Demo inhibitor" in lim for lim in v.limitations)
 
 
 def test_inhibitor_rule_not_triggered_for_poor():
@@ -150,7 +169,7 @@ def test_references_sorted_stably():
 def test_raw_json_requested_only_for_matched_ids():
     repo = FakeRulesRepo()
     ReviewEngine(repo).assess(req([("CYP2D6", "poor_metabolizer")], ["tamoxifen"]))
-    assert repo.raw_requests == [["SYN1", "SYN2"]]
+    assert repo.raw_requests == [["SYN1", "SYN11", "SYN2"]]
 
 
 def test_medication_search():

@@ -13,7 +13,9 @@ def _raw(rec=True, version=3, date="2022-02-10T13:51:37.87-08:00"):
 SYNTHETIC_ROWS = [
     # (id, name, source, genes, chemicals, summary_html, raw_json)
     ("SYN1", "SYNTHETIC CPIC tamoxifen / CYP2D6", "CPIC", "{CYP2D6}", "{tamoxifen}",
-     "<p>SYNTHETIC: consider alternatives for CYP2D6 poor metabolizers &amp; intermediate metabolizers.</p>\n", _raw()),
+     "<p>SYNTHETIC: consider an aromatase inhibitor for CYP2D6 poor metabolizers &amp; intermediate metabolizers. If an aromatase inhibitor is contraindicated, consider a higher dose.</p>\n", _raw()),
+    ("SYN11", "SYNTHETIC DPWG tamoxifen / CYP2D6", "DPWG", "{CYP2D6}", "{tamoxifen}",
+     "<p>SYNTHETIC: For intermediate metabolizers, avoid concomitant CYP2D6 inhibitor use.</p>", _raw(version=58, date="2026-04-27T00:00:00Z")),
     ("SYN2", "SYNTHETIC RNPGx tamoxifen / CYP2D6", "RNPGx", "{CYP2D6}", "{tamoxifen}",
      "<p>SYNTHETIC: no recommendation to genotype. poor intermediate</p>", _raw(rec=False)),
     ("SYN3", "SYNTHETIC CPIC paroxetine / CYP2D6", "CPIC", "{CYP2D6}", "{paroxetine}",

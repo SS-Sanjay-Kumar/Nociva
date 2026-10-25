@@ -95,6 +95,26 @@ def summary_mentions(summary: str, key: str) -> bool:
     return bool(PHENOTYPE_PATTERNS[key].search(text))
 
 
+_AROMATASE = re.compile(r"\baromatase inhibitors?\b")
+
+
+def mentions_enzyme_inhibitor(summary: str, gene: str) -> bool:
+    """True if the summary names an enzyme-inhibitor interaction for `gene`.
+
+    Rule: some sentence must contain the word "inhibitor" AND either the gene
+    name (e.g. "CYP2D6 inhibitor") or the word "concomitant" ("avoid
+    concomitant inhibitor use"). Because "inhibitor" also names unrelated drug
+    classes, "aromatase inhibitor(s)" is removed from the sentence first: a
+    guideline that only recommends an aromatase inhibitor as an alternative
+    therapy is NOT describing a CYP inhibitor interaction and does not qualify.
+    """
+    for sentence in re.split(r"(?<=[.;!?])\s+", summary.lower()):
+        sentence = _AROMATASE.sub("", sentence)
+        if "inhibitor" in sentence and (gene.lower() in sentence or "concomitant" in sentence):
+            return True
+    return False
+
+
 def load_inhibitors() -> List[Dict[str, Any]]:
     return json.loads(INHIBITOR_FILE.read_text(encoding="utf-8"))["inhibitors"]
 
@@ -252,19 +272,21 @@ class ReviewEngine:
                 for med in sorted(set(med_names)):
                     if med == inhibitor or (gene, med) not in pairs:
                         continue
-                    rows = pairs[(gene, med)]
-                    quote_row = rows[0]
+                    rows = [r for r in pairs[(gene, med)] if mentions_enzyme_inhibitor(r["summary"], gene)]
+                    if not rows:
+                        continue  # no guideline text about an inhibitor interaction: no inhibitor association
                     assoc_specs.append(
                         {
                             "kind": "gene_drug_drug",
                             "gene": gene,
                             "med": med,
                             "inhibitor": inhibitor,
-                            "rows": [quote_row],
+                            "rows": rows,
                             "rule": f"GDD-{gene}-{inhibitor.upper()}-{med.upper()}",
                         }
                     )
-                    cited[quote_row["guideline_id"]] = quote_row
+                    for r in rows:
+                        cited[r["guideline_id"]] = r
                     if mechanism is None:
                         score = getattr(genotype, "activityScore", None)
                         sub = norm + (f" · activity score {score:.1f}" if score is not None else "")
@@ -275,8 +297,8 @@ class ReviewEngine:
                             FlowNode(
                                 kind="effect",
                                 label="Guideline text (quoted)",
-                                title=f"{quote_row['source']}: {quote_row['name']}",
-                                sub=f"“{quote_row['summary']}”",
+                                title="; ".join(f"{r['source']}: {r['name']}" for r in rows),
+                                sub=" ".join(f"“{r['summary']}”" for r in rows),
                             ),
                         ]
                     if DEMO_LABEL + "." not in limitations:
